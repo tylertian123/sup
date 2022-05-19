@@ -1,5 +1,5 @@
 #include "nw.h"
-#include "util.h"
+#include "common.h"
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -8,7 +8,7 @@
 namespace nw {
 
     const char *hostname = "sup";
-    const unsigned long timeout = 60000UL;
+    const unsigned short timeout = 60;
 
     const IPAddress ip_local(192, 168, 0, 1);
     const IPAddress ip_gateway(192, 168, 0, 1);
@@ -29,16 +29,27 @@ namespace nw {
         connect_status = WL_DISCONNECTED;
         if (use_saved) {
             WiFi.begin();
-            connect_status = WiFi.waitForConnectResult(timeout);
+
+            int counter = 0;
+            while ((connect_status = WiFi.status()) == WL_DISCONNECTED && counter * 2 < timeout) {
+                delay(500);
+                digitalWrite(STATUS_LED, !digitalRead(STATUS_LED));
+                counter++;
+            }
         }
+
         if (connect_status == WL_CONNECTED) {
             DEBUG_OUT(F("Connected to saved network"));
+            digitalWrite(STATUS_LED, 1);
             return;
         }
         DEBUG_OUT(F("Can't connect to saved network"));
 
+
         // In case of failure, run the access point + config server
         while (connect_status != WL_CONNECTED) {
+            digitalWrite(STATUS_LED, 0);
+
             // Enable access point
             init_ap();
             if (!MDNS.begin(hostname)) {
@@ -66,9 +77,18 @@ namespace nw {
             // Try connecting
             WiFi.persistent(true);
             WiFi.begin(input_ssid, input_password);
-            connect_status = WiFi.waitForConnectResult(timeout);
+            int counter = 0;
+            while ((connect_status = WiFi.status()) == WL_DISCONNECTED && counter * 2 < timeout) {
+                delay(500);
+                digitalWrite(STATUS_LED, !digitalRead(STATUS_LED));
+                counter++;
+            }
+            if (connect_status != WL_CONNECTED) {
+                DEBUG_OUT(F("Failed to connect!"));
+            }
             WiFi.persistent(false);
         }
+        digitalWrite(STATUS_LED, 1);
     }
 
     void init_ap() {
