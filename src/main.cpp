@@ -2,15 +2,21 @@
 #include <ESP8266WiFi.h>
 
 #include "nw.h"
+#include "util.h"
 
 
 void setup() {
+    pinMode(D1, INPUT_PULLUP);
+
     Serial.begin(115200);
-    Serial.println("Started");
+    DEBUG_OUT("Started");
+    if (!digitalRead(D1)) {
+        DEBUG_OUT("Forcing AP mode");
+    }
 
-    nw::wifi_connect();
+    nw::wifi_connect(digitalRead(D1));
 
-    Serial.println(WiFi.localIP());
+    DEBUG_OUT(WiFi.localIP());
 }
 
 void loop() {
