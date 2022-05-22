@@ -1,8 +1,10 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
+#include <Firebase_ESP_Client.h>
 
 #include "nw.h"
 #include "common.h"
+#include "config.h"
 
 
 void setup() {
@@ -12,6 +14,9 @@ void setup() {
 
     Serial.begin(115200);
     DEBUG_OUT("Started");
+
+    config::load_config();
+
     if (!digitalRead(D1)) {
         DEBUG_OUT("Forcing AP mode");
     }

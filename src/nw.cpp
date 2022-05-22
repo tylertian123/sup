@@ -1,5 +1,6 @@
 #include "nw.h"
 #include "common.h"
+#include "config.h"
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -100,7 +101,7 @@ namespace nw {
 
     void init_server(ESP8266WebServer &server) {
         server.on("/", HTTP_GET, [&server]() {
-            server.sendHeader("Location", "/wifi");
+            server.sendHeader("Location", "/config");
             server.send(301, "text/plain", "");
         });
         // For debug
@@ -110,7 +111,7 @@ namespace nw {
             server.send(200, "text/plain", buf);
         });
         // Main configuration UI
-        server.on("/wifi", HTTP_GET, [&server]() {
+        server.on("/config", HTTP_GET, [&server]() {
             const char *status_str;
             switch (connect_status) {
             case WL_NO_SSID_AVAIL:
@@ -137,8 +138,8 @@ namespace nw {
             }
             char buf[1024];
             snprintf_P(buf, sizeof(buf), PSTR(
-                "<!DOCTYPE html><html><head><title>Configure Wi-Fi</title></head><body><h2>Configure Wi-Fi</h2>Current status: %S<br><form method=\"post\" action=\"/wifi-connect\" enctype=\"application/x-www-form-urlencoded\"><label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Connect\"></form></body></html>"
-            ), status_str);
+                "<!DOCTYPE html><html><head> <title>Configuration</title></head><body> <h2>Login Credentials</h2> <details> <summary>Click to show current password</summary> %s </details> <form method=\"post\" action=\"/db-credentials\" enctype=\"application/x-www-form-urlencoded\"> <label>Email:<br><input type=\"text\" name=\"email\" value=\"%s\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Update\"> </form> <h2>Configure Wi-Fi</h2>Current status: %s <br><form method=\"post\" action=\"/wifi-connect\" enctype=\"application/x-www-form-urlencoded\"> <label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Connect\"> </form></body></html>"
+            ), config::global_config.db_auth_password, config::global_config.db_auth_email, status_str);
 
             server.send(200, "text/html", buf);
         });
@@ -155,6 +156,18 @@ namespace nw {
             ));
             // Set this to indicate that we should reconnect now
             connect_status = -1;
+        });
+        server.on("/db-credentials", HTTP_POST, [&server]() {
+            if (!server.hasArg("email") && server.hasArg("password")) {
+                server.send(400, "text/plain", "Bad Request");
+                return;
+            }
+            strcpy(config::global_config.db_auth_email, server.arg("email").c_str());
+            strcpy(config::global_config.db_auth_password, server.arg("password").c_str());
+            config::save_config();
+            server.send_P(200, "text/html", PSTR(
+                "<!DOCTYPE html><html><head><title>Success!</title></head><body><p>Login credentials configured successfully. You may now reset the device.</p></body></html>"
+            ));
         });
     }
 }
