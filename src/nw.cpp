@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
+#include <stdio.h>
 
 namespace nw {
 
@@ -26,7 +27,7 @@ namespace nw {
         WiFi.mode(WIFI_STA);
         WiFi.hostname(hostname);
 
-        connect_status = WL_DISCONNECTED;
+        connect_status = -2;
         if (use_saved) {
             WiFi.begin();
 
@@ -104,39 +105,42 @@ namespace nw {
         });
         // For debug
         server.on("/status", HTTP_GET, [&server]() {
-            char resp[] = "Status:  ";
-            resp[8] = '0' + connect_status;
-            server.send(200, "text/plain", resp);
+            char buf[20];
+            snprintf_P(buf, sizeof(buf), "Status: %d", connect_status);
+            server.send(200, "text/plain", buf);
         });
         // Main configuration UI
         server.on("/wifi", HTTP_GET, [&server]() {
-            String html(F("<!DOCTYPE html><html><head><title>Configure Wi-Fi</title></head><body><h2>Configure Wi-Fi</h2>Current status: "));
-            html.reserve(500);
+            const char *status_str;
             switch (connect_status) {
             case WL_NO_SSID_AVAIL:
-                html += F("Connect Failed (Invalid SSID)");
+                status_str = PSTR("Connect Failed (Invalid SSID)");
                 break;
             case WL_CONNECTED:
-                html += F("Connected");
+                status_str = PSTR("Connected");
                 break;
             case WL_CONNECT_FAILED:
-                html += F("Connect Failed");
+                status_str = PSTR("Connect Failed");
                 break;
             case WL_WRONG_PASSWORD:
-                html += F("Connect Failed (Wrong Password)");
+                status_str = PSTR("Connect Failed (Wrong Password)");
                 break;
             case WL_DISCONNECTED:
-                html += F("Not Connected");
+                status_str = PSTR("Not Connected");
+                break;
+            case -2:
+                status_str = PSTR("Not Connected (Manually Skipped)");
                 break;
             default:
-                html += F("Unknown (");
-                html += connect_status;
-                html += F(")");
+                status_str = PSTR("Unknown");
                 break;
             }
-            html += F("<br><form method=\"post\" action=\"/wifi-connect\" enctype=\"application/x-www-form-urlencoded\"><label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Connect\"></form></body></html>");
+            char buf[1024];
+            snprintf_P(buf, sizeof(buf), PSTR(
+                "<!DOCTYPE html><html><head><title>Configure Wi-Fi</title></head><body><h2>Configure Wi-Fi</h2>Current status: %S<br><form method=\"post\" action=\"/wifi-connect\" enctype=\"application/x-www-form-urlencoded\"><label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Connect\"></form></body></html>"
+            ), status_str);
 
-            server.send(200, "text/html", html);
+            server.send(200, "text/html", buf);
         });
         // Config backend
         server.on("/wifi-connect", HTTP_POST, [&server]() {
