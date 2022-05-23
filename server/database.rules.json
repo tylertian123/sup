@@ -1,0 +1,13 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      "$uid": {
+        // Allow correct uid to access, and also any user with their email under 'allow'
+        ".read": "auth != null && ($uid === auth.uid || data.child('allow').child(auth.token.email).val() === true)",
+        ".write": "auth != null && ($uid === auth.uid || data.child('allow').child(auth.token.email).val() === true)"
+      }
+    }
+  }
+}
