@@ -1,0 +1,20 @@
+{
+  "name": "sup-server",
+  "version": "0.1.0",
+  "description": "Sup server",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "next dev",
+    "build": "next build && next export",
+    "createfirebaseconf": "firebase apps:sdkconfig web --json > ./pages/firebase-config.json"
+  },
+  "author": "Tyler Tian",
+  "dependencies": {
+    "firebase": "^9.8.1",
+    "firebaseui": "^6.0.1",
+    "next": "^12.1.6",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0",
+    "react-firebaseui": "^6.0.0"
+  }
+}
