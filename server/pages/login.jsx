@@ -26,7 +26,7 @@ export default function Index() {
     useEffect(() =>
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                router.replace("/");
+                router.replace('/');
             }
         }), []
     );
