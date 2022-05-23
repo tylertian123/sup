@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import Head from "next/head";
-import { Container, Navbar, Spinner } from "react-bootstrap";
+import { Button, Container, Nav, Navbar, Spinner } from "react-bootstrap";
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
@@ -10,15 +10,16 @@ const firebaseConfig = require('../pages/firebase-config.json').result.sdkConfig
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 
 export default function Layout({ children, title = "Sup" }) {
-    const [loggedIn, setLoggedIn] = useState(false);
+    const [loginUser, setLoginUser] = useState(null);
 
     const router = useRouter();
     useEffect(() =>
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                setLoggedIn(true);
+                setLoginUser(user);
             }
             else {
+                setLoginUser(null);
                 router.replace('/login');
             }
         }), []
@@ -29,16 +30,22 @@ export default function Layout({ children, title = "Sup" }) {
             <Head>
                 <title>{title}</title>
             </Head>
-            <Navbar bg="light" variant="light">
+            <Navbar bg="dark" variant="dark">
                 <Container>
                     <Navbar.Brand>Navbar</Navbar.Brand>
+                    {loginUser ?
+                        <Navbar.Collapse className="justify-content-end">
+                            <Navbar.Text><u>{loginUser.email}</u></Navbar.Text>
+                            <Button className="mx-2" size="sm" onClick={() => firebase.auth().signOut().catch((err) => console.log(err))}>Logout</Button>
+                        </Navbar.Collapse>
+                    : null}
                 </Container>
             </Navbar>
 
-            {!loggedIn ? <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            {!loginUser ? <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <Spinner animation="border" role="status" /></div>
                 : null}
-            <div style={{ visibility: loggedIn ? 'visible' : 'hidden' }}>{children}</div>
+            <div style={{ visibility: loginUser ? 'visible' : 'hidden' }}>{children}</div>
         </>
     );
 }
