@@ -50,7 +50,7 @@ export default function Config() {
     if (db && loginUser) {
         if (defaultFormData.dataLocation === null) {
             db.ref("/users/" + loginUser.uid + "/writeTo").get().then((snapshot) => {
-                if (snapshot.exists) {
+                if (snapshot.exists()) {
                     setDefaultFormData({
                         ...defaultFormData,
                         dataLocation: snapshot.val()
@@ -64,7 +64,7 @@ export default function Config() {
             <Container>
                 {success ? <Alert variant="success" dismissible onClose={() => setSuccess(false)}>Success!</Alert> : null}
                 <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                    <Form.Group>
+                    <Form.Group className="mb-3">
                         <Form.Label>Display Data Location</Form.Label>
                         <Form.Control name="dataLocation" required type="text" pattern="[a-zA-Z0-9-]+" className="w-50 bg-white" placeholder="e.g. myData" defaultValue={defaultFormData.dataLocation}/>
                         <Form.Control.Feedback type="invalid">Location can only contain alphanumeric characters and dashes and can't be empty.</Form.Control.Feedback>
