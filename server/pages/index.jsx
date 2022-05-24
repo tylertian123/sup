@@ -9,7 +9,7 @@ import Layout from '../components/layout';
 export default function Home() {
 
     return (
-        <Layout title="Home">
+        <Layout title="Home" navbarActiveKey="home">
             <Container>
                 <p>You are logged in!</p>
             </Container>
