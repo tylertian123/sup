@@ -6,6 +6,15 @@
 #include "common.h"
 #include "config.h"
 
+/*
+ * NOTE: secrets.h defines:
+ * FIREBASE_DB_URL: Firebase RTDB URL
+ * FIREBASE_API_KEY: Firebase API key
+ * DEFAULT_SSID: Default access point SSID if configuration is invalid
+ * DEFAULT_PASSWORD: Default access point password if configuration is invalid
+ */
+#include "secrets.h"
+
 
 void setup() {
     pinMode(D1, INPUT_PULLUP);
@@ -13,12 +22,15 @@ void setup() {
     digitalWrite(STATUS_LED, 0);
 
     Serial.begin(115200);
-    DEBUG_OUT("Started");
+    DEBUG_OUT(F("Started"));
 
-    config::load_config();
+    config::init();
+    if (!config::load_config()) {
+        DEBUG_OUT(F("Failed to load config object, using default values"));
+    }
 
     if (!digitalRead(D1)) {
-        DEBUG_OUT("Forcing AP mode");
+        DEBUG_OUT(F("Forcing AP mode"));
     }
 
     nw::wifi_connect(digitalRead(D1));

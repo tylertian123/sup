@@ -16,9 +16,6 @@ namespace nw {
     const IPAddress ip_gateway(192, 168, 0, 1);
     const IPAddress ip_subnet(255, 255, 255, 0);
 
-    const char *ssid = hostname;
-    const char *password = "temp_password_change_me";
-
     int connect_status = WL_DISCONNECTED;
     String input_ssid, input_password;
 
@@ -96,7 +93,7 @@ namespace nw {
     void init_ap() {
         WiFi.mode(WIFI_AP);
         WiFi.softAPConfig(ip_local, ip_gateway, ip_subnet);
-        WiFi.softAP(ssid, password);
+        WiFi.softAP(config::global_config.ap_ssid, config::global_config.ap_password);
     }
 
     void init_server(ESP8266WebServer &server) {
