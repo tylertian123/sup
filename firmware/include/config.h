@@ -12,6 +12,7 @@ namespace config {
         char ap_password[32];
         char db_auth_email[64];
         char db_auth_password[32];
+        char db_data_location[32];
     };
 
     extern Config global_config;

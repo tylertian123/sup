@@ -101,6 +101,11 @@ namespace nw {
             server.sendHeader("Location", "/config");
             server.send(301, "text/plain", "");
         });
+        server.on("/stylesheet.css", HTTP_GET, [&server]() {
+            server.send_P(200, "text/css", PSTR(
+                "body {font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;font-size: 16px;}details {display: inline-block;padding: 7px;border-radius: 5px;border: 1px solid #aaa;}form, p {margin: 5px;}input {margin-top: 3px;margin-bottom: 3px;}"
+            ));
+        });
         // For debug
         server.on("/status", HTTP_GET, [&server]() {
             char buf[20];
@@ -135,8 +140,8 @@ namespace nw {
             }
             char buf[2048];
             snprintf_P(buf, sizeof(buf), PSTR(
-                "<!DOCTYPE html><html><head> <title>Configuration</title></head><body> <h2>Login Credentials</h2> <details> <summary>Click to show current password</summary> %s </details> <form method=\"post\" action=\"/db-credentials\" enctype=\"application/x-www-form-urlencoded\"> <label>Email:<br><input type=\"text\" name=\"email\" value=\"%s\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Update\"> </form> <h2>Configure Wi-Fi Connection</h2>Current status: %s <br><form method=\"post\" action=\"/wifi-connect\" enctype=\"application/x-www-form-urlencoded\"> <label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Connect\"> </form><br><h2>Configure Hosted Access Point Settings</h2> <details> <summary>Click to show current password</summary> %s </details> <form method=\"post\" action=\"/ap-setup\" enctype=\"application/x-www-form-urlencoded\"> <label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" value=\"%s\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Update\"> </form></body></html>"
-            ), config::global_config.db_auth_password, config::global_config.db_auth_email, status_str, config::global_config.ap_password, config::global_config.ap_ssid);
+                "<!DOCTYPE html><html><head> <title>Configuration</title> <link rel=\"stylesheet\" type=\"text/css\" href=\"stylesheet.css\"></head><body> <h2>Setup</h2> <details> <summary>Click to show current password</summary> %s </details> <form method=\"post\" action=\"/db-credentials\" enctype=\"application/x-www-form-urlencoded\"> <label>Email:<br><input type=\"text\" name=\"email\" value=\"%s\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><label>Display Data Location:<br><input type=\"text\" name=\"location\" required pattern=\"[a-zA-Z0-9-]{1,31}\" value=\"%s\"></label><br><input type=\"submit\" value=\"Update\"> </form> <h2>Connect to Wi-Fi</h2> <p>Current status: %s</p><form method=\"post\" action=\"/wifi-connect\" enctype=\"application/x-www-form-urlencoded\"> <label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Connect\"> </form><br><h2>Configure Hosted Access Point Settings</h2> <details> <summary>Click to show current password</summary> %s </details> <form method=\"post\" action=\"/ap-setup\" enctype=\"application/x-www-form-urlencoded\"> <label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" value=\"%s\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Update\"> </form></body></html>"
+            ), config::global_config.db_auth_password, config::global_config.db_auth_email, config::global_config.db_data_location, status_str, config::global_config.ap_password, config::global_config.ap_ssid);
 
             server.send(200, "text/html", buf);
         });
@@ -155,15 +160,16 @@ namespace nw {
             connect_status = -1;
         });
         server.on("/db-credentials", HTTP_POST, [&server]() {
-            if (!server.hasArg("email") && server.hasArg("password")) {
+            if (!server.hasArg("email") && server.hasArg("password") && server.hasArg("location")) {
                 server.send(400, "text/plain", "Bad Request");
                 return;
             }
             strncpy(config::global_config.db_auth_email, server.arg("email").c_str(), 64);
             strncpy(config::global_config.db_auth_password, server.arg("password").c_str(), 32);
+            strncpy(config::global_config.db_data_location, server.arg("location").c_str(), 32);
             config::save_config();
             server.send_P(200, "text/html", PSTR(
-                "<!DOCTYPE html><html><head><title>Success!</title></head><body><p>Login credentials configured successfully. You may now reset the device.</p></body></html>"
+                "<!DOCTYPE html><html><head><title>Success!</title></head><body><p>Database setup configured successfully. You may now reset the device.</p></body></html>"
             ));
         });
         server.on("/ap-setup", HTTP_POST, [&server]() {
