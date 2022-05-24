@@ -9,18 +9,20 @@ import 'firebase/compat/auth';
 const firebaseConfig = require('../pages/firebase-config.json').result.sdkConfig;
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 
-export default function Layout({ children, title = "Sup" }) {
+export default function Layout({ children, title = "Sup", requireSignIn = true }) {
     const [loginUser, setLoginUser] = useState(null);
 
     const router = useRouter();
     useEffect(() =>
         firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                setLoginUser(user);
-            }
-            else {
-                setLoginUser(null);
-                router.replace('/login');
+            if (requireSignIn) {
+                if (user) {
+                    setLoginUser(user);
+                }
+                else {
+                    setLoginUser(null);
+                    router.replace('/login');
+                }
             }
         }), []
     );
@@ -30,7 +32,7 @@ export default function Layout({ children, title = "Sup" }) {
             <Head>
                 <title>{title}</title>
             </Head>
-            <Navbar bg="dark" variant="dark">
+            <Navbar bg="dark" variant="dark" className="mb-3">
                 <Container>
                     <Navbar.Brand>Navbar</Navbar.Brand>
                     {loginUser ?
@@ -42,10 +44,10 @@ export default function Layout({ children, title = "Sup" }) {
                 </Container>
             </Navbar>
 
-            {!loginUser ? <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            {requireSignIn && !loginUser ? <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <Spinner animation="border" role="status" /></div>
                 : null}
-            <div style={{ visibility: loginUser ? 'visible' : 'hidden' }}>{children}</div>
+            <div style={{ visibility: loginUser || !requireSignIn ? 'visible' : 'hidden' }}>{children}</div>
         </>
     );
 }

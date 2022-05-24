@@ -5,6 +5,8 @@ import Head from 'next/head';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
+import Layout from '../components/layout';
+import { Container } from 'react-bootstrap';
 
 const firebaseConfig = require('./firebase-config.json').result.sdkConfig;
 const firebaseApp = firebase.initializeApp(firebaseConfig);
@@ -31,11 +33,10 @@ export default function Index() {
         }), []
     );
     return (
-        <>
-            <Head>
-                <title>Sign In</title>
-            </Head>
-            <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()}/>
-        </>
+        <Layout title="Sign In" requireSignIn={false}>
+            <Container>
+                <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()}/>
+            </Container>
+        </Layout>
     );
 }
