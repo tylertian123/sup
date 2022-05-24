@@ -8,21 +8,22 @@
 <body>
     <h2>Login Credentials</h2>
     <details>
-        <summary>Click to show current password</summary>
-        %s
+        <summary>Click to show current password</summary> %s
     </details>
-    <form method="post" action="/db-credentials" enctype="application/x-www-form-urlencoded">
-        <label>Email:<br><input type="text" name="email" value="%s" required></label><br>
-        <label>Password:<br><input type="password" name="password" required></label><br>
-        <input type="submit" value="Update">
-    </form>
-    <h2>Configure Wi-Fi</h2>Current status: %s
-    <br>
-    <form method="post" action="/wifi-connect" enctype="application/x-www-form-urlencoded">
-        <label>Network Name (SSID):<br><input type="text" name="ssid" required></label><br>
-        <label>Password:<br><input type="password" name="password" required></label><br>
-        <input type="submit" value="Connect">
-    </form>
+    <form method="post" action="/db-credentials" enctype="application/x-www-form-urlencoded"> <label>Email:<br><input
+                type="text" name="email" value="%s" required></label><br><label>Password:<br><input type="password"
+                name="password" required></label><br><input type="submit" value="Update"> </form>
+    <h2>Configure Wi-Fi Connection</h2>Current status: %s <br>
+    <form method="post" action="/wifi-connect" enctype="application/x-www-form-urlencoded"> <label>Network Name
+            (SSID):<br><input type="text" name="ssid" required></label><br><label>Password:<br><input type="password"
+                name="password" required></label><br><input type="submit" value="Connect"> </form><br>
+    <h2>Configure Hosted Access Point Settings</h2>
+    <details>
+        <summary>Click to show current password</summary> %s
+    </details>
+    <form method="post" action="/ap-setup" enctype="application/x-www-form-urlencoded"> <label>Network Name
+            (SSID):<br><input type="text" name="ssid" value="%s" required></label><br><label>Password:<br><input type="password"
+                name="password" required></label><br><input type="submit" value="Update"> </form>
 </body>
 
 </html>

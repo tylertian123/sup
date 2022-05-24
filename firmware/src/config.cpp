@@ -30,5 +30,6 @@ namespace config {
 
     void save_config(Config &conf, int addr) {
         EEPROM.put(addr, conf);
+        EEPROM.commit();
     }
 }

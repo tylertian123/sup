@@ -66,6 +66,7 @@ export default function Config() {
                 <Form noValidate validated={validated} onSubmit={handleSubmit}>
                     <Form.Group className="mb-3">
                         <Form.Label>Display Data Location</Form.Label>
+                        {/* TODO: Length validation */}
                         <Form.Control name="dataLocation" required type="text" pattern="[a-zA-Z0-9-]+" className="w-50 bg-white" placeholder="e.g. myData" defaultValue={defaultFormData.dataLocation}/>
                         <Form.Control.Feedback type="invalid">Location can only contain alphanumeric characters and dashes and can't be empty.</Form.Control.Feedback>
                         <Form.Text className="text-muted">Where to put the display data in the database. Any device configured to read from this location will display whatever you send!</Form.Text>

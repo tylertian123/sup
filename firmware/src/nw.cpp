@@ -133,10 +133,10 @@ namespace nw {
                 status_str = PSTR("Unknown");
                 break;
             }
-            char buf[1024];
+            char buf[2048];
             snprintf_P(buf, sizeof(buf), PSTR(
-                "<!DOCTYPE html><html><head> <title>Configuration</title></head><body> <h2>Login Credentials</h2> <details> <summary>Click to show current password</summary> %s </details> <form method=\"post\" action=\"/db-credentials\" enctype=\"application/x-www-form-urlencoded\"> <label>Email:<br><input type=\"text\" name=\"email\" value=\"%s\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Update\"> </form> <h2>Configure Wi-Fi</h2>Current status: %s <br><form method=\"post\" action=\"/wifi-connect\" enctype=\"application/x-www-form-urlencoded\"> <label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Connect\"> </form></body></html>"
-            ), config::global_config.db_auth_password, config::global_config.db_auth_email, status_str);
+                "<!DOCTYPE html><html><head> <title>Configuration</title></head><body> <h2>Login Credentials</h2> <details> <summary>Click to show current password</summary> %s </details> <form method=\"post\" action=\"/db-credentials\" enctype=\"application/x-www-form-urlencoded\"> <label>Email:<br><input type=\"text\" name=\"email\" value=\"%s\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Update\"> </form> <h2>Configure Wi-Fi Connection</h2>Current status: %s <br><form method=\"post\" action=\"/wifi-connect\" enctype=\"application/x-www-form-urlencoded\"> <label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Connect\"> </form><br><h2>Configure Hosted Access Point Settings</h2> <details> <summary>Click to show current password</summary> %s </details> <form method=\"post\" action=\"/ap-setup\" enctype=\"application/x-www-form-urlencoded\"> <label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" value=\"%s\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Update\"> </form></body></html>"
+            ), config::global_config.db_auth_password, config::global_config.db_auth_email, status_str, config::global_config.ap_password, config::global_config.ap_ssid);
 
             server.send(200, "text/html", buf);
         });
@@ -159,11 +159,23 @@ namespace nw {
                 server.send(400, "text/plain", "Bad Request");
                 return;
             }
-            strcpy(config::global_config.db_auth_email, server.arg("email").c_str());
-            strcpy(config::global_config.db_auth_password, server.arg("password").c_str());
+            strncpy(config::global_config.db_auth_email, server.arg("email").c_str(), 64);
+            strncpy(config::global_config.db_auth_password, server.arg("password").c_str(), 32);
             config::save_config();
             server.send_P(200, "text/html", PSTR(
                 "<!DOCTYPE html><html><head><title>Success!</title></head><body><p>Login credentials configured successfully. You may now reset the device.</p></body></html>"
+            ));
+        });
+        server.on("/ap-setup", HTTP_POST, [&server]() {
+            if (!server.hasArg("ssid") && server.hasArg("password")) {
+                server.send(400, "text/plain", "Bad Request");
+                return;
+            }
+            strncpy(config::global_config.ap_ssid, server.arg("ssid").c_str(), 32);
+            strncpy(config::global_config.ap_password, server.arg("password").c_str(), 32);
+            config::save_config();
+            server.send_P(200, "text/html", PSTR(
+                "<!DOCTYPE html><html><head><title>Success!</title></head><body><p>Access point settings updated successfully. New settings will take effect on next reset.</p></body></html>"
             ));
         });
     }
