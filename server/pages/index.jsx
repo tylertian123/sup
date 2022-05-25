@@ -4,8 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Container, Form } from 'react-bootstrap';
 import Layout from '../components/Layout';
-import MultiDisplay from '../components/MultiDisplay';
-import { createDefaultValues } from '../components/MultiDisplay'
+import MultiDisplay, { createDefaultValues, packValues, unpackValues } from '../components/MultiDisplay'
 
 const db = firebase.database();
 try {
