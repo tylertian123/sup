@@ -1,0 +1,12 @@
+.outer {
+    display: inline-block;
+    padding: 3px;
+    border-radius: 10px;
+    background-color: #111;
+}
+
+.inner {
+    display: inline-grid;
+    gap: 1px;
+    background-color: #ffffff80;
+}

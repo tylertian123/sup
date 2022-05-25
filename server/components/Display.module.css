@@ -8,17 +8,16 @@
     -webkit-appearance: none;
     outline: none;
     cursor: pointer;
+    aspect-ratio: 1;
 }
 
 .led:checked {
     background-color: #e00;
-    aspect-ratio: 1;
 }
 
 .matrix {
     display: inline-grid;
     background-color: #111;
     gap: 3px;
-    padding: 5px;
-    border-radius: 10px;
+    padding: 1.5px;
 }

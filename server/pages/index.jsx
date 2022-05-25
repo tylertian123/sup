@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Container, Form } from 'react-bootstrap';
 import Display from '../components/Display';
 import Layout from '../components/Layout';
+import MultiDisplay from '../components/MultiDisplay';
 
 const db = firebase.database();
 try {
@@ -65,7 +66,7 @@ export default function Home() {
                     </Form.Group>
                     <Button type="submit">Submit</Button>
                 </Form>
-                <Display rows={8} cols={8}/>
+                <MultiDisplay rows={2} cols={2}></MultiDisplay>
             </Container>
         </Layout>
     );
