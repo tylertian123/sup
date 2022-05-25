@@ -11,9 +11,31 @@ try {
     db.useEmulator('localhost', 9000);
 } catch (e) {}
 
+function serializeDisplay(values) {
+    return window.btoa(String.fromCharCode(...unpackValues(values).flat().reduce((data, bit, i) => {
+        if (i % 8 == 0) {
+            data.push(bit);
+        }
+        else {
+            data[data.length - 1] = (data[data.length - 1] << 1) + bit;
+        }
+        return data;
+    }, [])));
+}
+
+function deserializeDisplay(b64Data, width) {
+    return packValues([...window.atob(b64Data)].map(
+        (c) => new Array(8).fill(null).map(
+            (_e, i) => (c.charCodeAt(0) & (1 << (7 - i))) !== 0
+        ))
+    .flat()
+    .reduce((rows, key, i) => (i % width == 0 ? rows.push([key]) : (rows[rows.length - 1].push(key)), rows), []));
+}
+
 export default function Home() {
     const [loginUser, setLoginUser] = useState(null);
     const [configOk, setConfigOk] = useState(true);
+    const [success, setSuccess] = useState(false);
     const [displayValues, setDisplayValues] = useState(createDefaultValues(2, 2));
     const writeTo = useRef(null);
 
@@ -32,12 +54,21 @@ export default function Home() {
             }
             else {
                 writeTo.current = snapshot.val();
+                db.ref(`/data/${writeTo.current}/displayData`).get().then((snapshot) => {
+                    if (snapshot.exists()) {
+                        if (!snapshot.val().startsWith("blob,base64,")) {
+                            alert("Error: Data is not in the expected format!");
+                        }
+                        else {
+                            setDisplayValues(deserializeDisplay(snapshot.val().slice("blob,base64,".length), 8 * 2));
+                        }
+                    }
+                });
             }
         });
     }
 
     const handleSubmit = (event) => {
-        const form = event.currentTarget;
         event.preventDefault();
         event.stopPropagation();
         
@@ -49,9 +80,17 @@ export default function Home() {
             alert("Error: Don't know where to write to!");
             return;
         }
-        const data = new FormData(form);
-        db.ref("/data/" + writeTo.current).set({
-            testData: data.get("testData")
+        
+        // Try to serialize the data now
+        db.ref(`/data/${writeTo.current}`).update({
+            displayData: `blob,base64,${serializeDisplay(displayValues)}`
+        }).then(() => {
+            setSuccess(true);
+            window.setTimeout(() => {
+                setSuccess(false);
+            }, 3000);
+        }).catch((err) => {
+            console.log(err);
         });
     };
 
@@ -59,14 +98,14 @@ export default function Home() {
         <Layout title="Home" navbarActiveKey="home">
             <Container>
                 {!configOk ? <Alert variant="warning">You need to <Link href="/config">configure some settings</Link> before you can use this app.</Alert> : null}
+                {success ? <Alert variant="success" dismissible onClose={() => setSuccess(false)}>Success!</Alert> : null}
                 <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3">
-                        <Form.Label>Send Test Data</Form.Label>
-                        <Form.Control name="testData" required type="text" className="w-50 bg-white"/>
+                        <h3>Update Display</h3>
+                        <MultiDisplay values={displayValues} setValues={setDisplayValues}></MultiDisplay>
                     </Form.Group>
-                    <Button type="submit">Submit</Button>
+                    <Button type="submit" disabled={!configOk}>Submit</Button>
                 </Form>
-                <MultiDisplay values={displayValues} setValues={setDisplayValues}></MultiDisplay>
             </Container>
         </Layout>
     );
