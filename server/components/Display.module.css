@@ -1,0 +1,24 @@
+.led {
+    width: 1em;
+    height: 1em;
+    background-color: #bbb;
+    border-radius: 50%;
+    vertical-align: middle;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.led:checked {
+    background-color: #e00;
+    aspect-ratio: 1;
+}
+
+.matrix {
+    display: inline-grid;
+    background-color: #111;
+    gap: 3px;
+    padding: 5px;
+    border-radius: 10px;
+}

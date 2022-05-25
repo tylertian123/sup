@@ -2,11 +2,13 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { Alert, Button, Container, Form } from 'react-bootstrap';
-import Layout from '../components/layout';
+import Layout from '../components/Layout';
 
 
 const db = firebase.database();
-
+try {
+    db.useEmulator('localhost', 9000);
+} catch (e) {}
 
 export default function Config() {
     const [loginUser, setLoginUser] = useState(null);

@@ -3,9 +3,13 @@ import 'firebase/compat/database';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Container, Form } from 'react-bootstrap';
-import Layout from '../components/layout';
+import Display from '../components/Display';
+import Layout from '../components/Layout';
 
 const db = firebase.database();
+try {
+    db.useEmulator('localhost', 9000);
+} catch (e) {}
 
 export default function Home() {
     const [loginUser, setLoginUser] = useState(null);
@@ -61,6 +65,7 @@ export default function Home() {
                     </Form.Group>
                     <Button type="submit">Submit</Button>
                 </Form>
+                <Display rows={8} cols={8}/>
             </Container>
         </Layout>
     );

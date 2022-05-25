@@ -5,7 +5,7 @@ import Head from 'next/head';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
-import Layout from '../components/layout';
+import Layout from '../components/Layout';
 import { Container } from 'react-bootstrap';
 
 const firebaseConfig = require('./firebase-config.json').result.sdkConfig;
