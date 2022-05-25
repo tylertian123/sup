@@ -1,10 +1,12 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <Firebase_ESP_Client.h>
+#include <stdio.h>
 
 #include "nw.h"
 #include "common.h"
 #include "config.h"
+#include "fb.h"
 
 /*
  * NOTE: secrets.h defines:
@@ -15,6 +17,7 @@
  */
 #include "secrets.h"
 
+bool init_success = false;
 
 void setup() {
     pinMode(D1, INPUT_PULLUP);
@@ -36,8 +39,26 @@ void setup() {
     nw::wifi_connect(digitalRead(D1));
 
     DEBUG_OUT(WiFi.localIP());
+
+    if(!fb::init()) {
+        DEBUG_OUT(F("Failed to connect to Firebase!"));
+    }
+    else {
+        DEBUG_OUT(F("Connected to Firebase"));
+        if (!fb::start_stream()) {
+            DEBUG_OUT(F("Failed to start stream!"));
+        }
+        else {
+            DEBUG_OUT(F("Stream started"));
+            init_success = true;
+        }
+    }
 }
 
 void loop() {
-    
+    if (init_success) {
+        if (Firebase.ready()) {
+            // Nothing to do right now
+        }
+    }
 }
