@@ -3,9 +3,9 @@ import 'firebase/compat/database';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Container, Form } from 'react-bootstrap';
-import Display from '../components/Display';
 import Layout from '../components/Layout';
 import MultiDisplay from '../components/MultiDisplay';
+import { createDefaultValues } from '../components/MultiDisplay'
 
 const db = firebase.database();
 try {
@@ -15,6 +15,7 @@ try {
 export default function Home() {
     const [loginUser, setLoginUser] = useState(null);
     const [configOk, setConfigOk] = useState(true);
+    const [displayValues, setDisplayValues] = useState(createDefaultValues(2, 2));
     const writeTo = useRef(null);
 
     // Make sure the page is updated when auth state is changed, since the auth user starts out null
@@ -66,7 +67,7 @@ export default function Home() {
                     </Form.Group>
                     <Button type="submit">Submit</Button>
                 </Form>
-                <MultiDisplay rows={2} cols={2}></MultiDisplay>
+                <MultiDisplay values={displayValues} setValues={setDisplayValues}></MultiDisplay>
             </Container>
         </Layout>
     );
