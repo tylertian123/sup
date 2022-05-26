@@ -30,6 +30,24 @@ export default function Config() {
         }), []
     );
 
+    // Load the default form data
+    useEffect(() => {
+        if (loginUser) {
+            db.ref("/users/" + loginUser.uid + "/writeTo").get().then((snapshot) => {
+                // Update existing settings if the entry exists
+                if (snapshot.exists()) {
+                    setDefaultFormData({
+                        ...defaultFormData,
+                        dataLocation: snapshot.val()
+                    });
+                }
+            }).catch((err) => {
+                console.log(err);
+                setErrorMessage("Error: Cannot fetch current settings: " + err.toString());
+            });
+        }
+    }, [loginUser]);
+
     const handleSubmit = (event) => {
         const form = event.currentTarget;
         event.preventDefault();
@@ -52,22 +70,6 @@ export default function Config() {
         setValidated(true);
     };
 
-    if (db && loginUser) {
-        if (defaultFormData.dataLocation === null) {
-            db.ref("/users/" + loginUser.uid + "/writeTo").get().then((snapshot) => {
-                // Update existing settings if the entry exists
-                if (snapshot.exists()) {
-                    setDefaultFormData({
-                        ...defaultFormData,
-                        dataLocation: snapshot.val()
-                    });
-                }
-            }).catch((err) => {
-                console.log(err);
-                setErrorMessage("Error: Cannot fetch current settings: " + err.toString());
-            });
-        }
-    }
     return (
         <Layout title="Configuration">
             <Container>

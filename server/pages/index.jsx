@@ -67,27 +67,29 @@ export default function Home() {
     );
 
     // When user is loaded, try to find where to write the data and show the alert if it's not configured
-    if (db && loginUser && writeTo.current === null && configOk) {
-        db.ref(`/users/${loginUser.uid}/writeTo`).get().then((snapshot) => {
-            if (!snapshot.exists()) {
-                setConfigOk(false);
-            }
-            else {
-                writeTo.current = snapshot.val();
-                // If we have a location to read the display data from, then load the current display data
-                db.ref(`/data/${writeTo.current}/displayData`).get().then((snapshot) => {
-                    if (snapshot.exists()) {
-                        try {
-                            setDisplayValues(deserializeDisplay(snapshot.val().slice("blob,base64,".length), 8 * DISPLAY_WIDTH));
+    useEffect(() => {
+        if (loginUser) {
+            db.ref(`/users/${loginUser.uid}/writeTo`).get().then((snapshot) => {
+                if (!snapshot.exists()) {
+                    setConfigOk(false);
+                }
+                else {
+                    writeTo.current = snapshot.val();
+                    // If we have a location to read the display data from, then load the current display data
+                    db.ref(`/data/${writeTo.current}/displayData`).get().then((snapshot) => {
+                        if (snapshot.exists()) {
+                            try {
+                                setDisplayValues(deserializeDisplay(snapshot.val().slice("blob,base64,".length), 8 * DISPLAY_WIDTH));
+                            }
+                            catch (_e) {
+                                setErrorMessage(`Error: Can't get current display data because it's not in the expected format! (current data: ${snapshot.val()})`)
+                            }
                         }
-                        catch (_e) {
-                            setErrorMessage(`Error: Can't get current display data because it's not in the expected format! (current data: ${snapshot.val()})`)
-                        }
-                    }
-                });
-            }
-        });
-    }
+                    });
+                }
+            });
+        }
+    }, [loginUser]);
 
     const handleDisplaySubmit = (event) => {
         event.preventDefault();
