@@ -1,12 +1,12 @@
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
-import Head from 'next/head';
-
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
-import Layout from '../components/Layout';
+
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import { Container } from 'react-bootstrap';
+import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
+
+import Layout from '../components/Layout';
 
 const firebaseConfig = require('./firebase-config.json').result.sdkConfig;
 const firebaseApp = firebase.initializeApp(firebaseConfig);

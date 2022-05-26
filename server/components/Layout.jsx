@@ -1,11 +1,12 @@
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import Head from "next/head";
 import Link from "next/link";
 import { Button, Container, Nav, Navbar, Spinner } from "react-bootstrap";
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
 
 const firebaseConfig = require('../pages/firebase-config.json').result.sdkConfig;
 const firebaseApp = firebase.initializeApp(firebaseConfig);

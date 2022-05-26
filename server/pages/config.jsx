@@ -1,8 +1,11 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+
 import { useEffect, useState } from 'react';
-import { Alert, Button, Container, Form } from 'react-bootstrap';
+import { Button, Container, Form } from 'react-bootstrap';
+
 import Layout from '../components/Layout';
+import CollapsedAlert from '../components/CollapsedAlert';
 
 
 const db = firebase.database();
@@ -13,10 +16,12 @@ try {
 export default function Config() {
     const [loginUser, setLoginUser] = useState(null);
     const [validated, setValidated] = useState(false);
-    const [success, setSuccess] = useState(false);
     const [defaultFormData, setDefaultFormData] = useState({
         dataLocation: null,
     });
+
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [errorMessage, setErrorMessage] = useState(null);
 
     // Make sure the page is updated when auth state is changed, since the auth user starts out null
     useEffect(() =>
@@ -31,19 +36,17 @@ export default function Config() {
         event.stopPropagation();
         if (form.checkValidity() === true) {
             if (!loginUser) {
-                alert("Error: Not logged in!");
+                setErrorMessage("Error: Not logged in! (This should not happen!)");
                 return;
             }
             const data = new FormData(form);
             db.ref("/users/" + loginUser.uid).set({
                 writeTo: data.get("dataLocation")
             }).then(() => {
-                setSuccess(true);
-                window.setTimeout(() => {
-                    setSuccess(false);
-                }, 3000);
+                setSuccessMessage("Configuration updated!");
             }).catch((err) => {
                 console.log(err);
+                setErrorMessage("Error: Cannot update configuration: " + err.toString());
             });
         }
         setValidated(true);
@@ -52,19 +55,25 @@ export default function Config() {
     if (db && loginUser) {
         if (defaultFormData.dataLocation === null) {
             db.ref("/users/" + loginUser.uid + "/writeTo").get().then((snapshot) => {
+                // Update existing settings if the entry exists
                 if (snapshot.exists()) {
                     setDefaultFormData({
                         ...defaultFormData,
                         dataLocation: snapshot.val()
                     });
                 }
+            }).catch((err) => {
+                console.log(err);
+                setErrorMessage("Error: Cannot fetch current settings: " + err.toString());
             });
         }
     }
     return (
         <Layout title="Configuration">
             <Container>
-                {success ? <Alert variant="success" dismissible onClose={() => setSuccess(false)}>Success!</Alert> : null}
+                <CollapsedAlert variant="success" dismissible timeout={3000} message={successMessage} setMessage={setSuccessMessage}/>
+                <CollapsedAlert variant="danger" dismissible message={errorMessage} setMessage={setErrorMessage}/>
+
                 <Form noValidate validated={validated} onSubmit={handleSubmit}>
                     <Form.Group className="mb-3">
                         <Form.Label>Display Data Location</Form.Label>

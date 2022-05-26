@@ -1,10 +1,13 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Button, Container, Form } from 'react-bootstrap';
+import { Alert, Button, Collapse, Container, Form } from 'react-bootstrap';
+
 import Layout from '../components/Layout';
 import MultiDisplay, { createDefaultValues, packValues, unpackValues } from '../components/MultiDisplay'
+import CollapsedAlert from '../components/CollapsedAlert';
 
 const DISPLAY_WIDTH = 4;
 const DISPLAY_HEIGHT = 2;
@@ -38,9 +41,11 @@ function deserializeDisplay(b64Data, width) {
 export default function Home() {
     const [loginUser, setLoginUser] = useState(null);
     const [configOk, setConfigOk] = useState(true);
-    const [success, setSuccess] = useState(false);
     const [displayValues, setDisplayValues] = useState(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH));
     const writeTo = useRef(null);
+
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [errorMessage, setErrorMessage] = useState(null);
 
     // Make sure the page is updated when auth state is changed, since the auth user starts out null
     useEffect(() =>
@@ -57,13 +62,14 @@ export default function Home() {
             }
             else {
                 writeTo.current = snapshot.val();
+                // If we have a location to read the display data from, then load the current display data
                 db.ref(`/data/${writeTo.current}/displayData`).get().then((snapshot) => {
                     if (snapshot.exists()) {
-                        if (!snapshot.val().startsWith("blob,base64,")) {
-                            alert("Error: Data is not in the expected format!");
-                        }
-                        else {
+                        try {
                             setDisplayValues(deserializeDisplay(snapshot.val().slice("blob,base64,".length), 8 * DISPLAY_WIDTH));
+                        }
+                        catch (_e) {
+                            setErrorMessage(`Error: Can't get current display data because it's not in the expected format! (current data: ${snapshot.val()})`)
                         }
                     }
                 });
@@ -76,11 +82,11 @@ export default function Home() {
         event.stopPropagation();
         
         if (!loginUser) {
-            alert("Error: Not logged in!");
+            setErrorMessage("Error: Not logged in! (This should not happen!)");
             return;
         }
         if (writeTo.current === null) {
-            alert("Error: Don't know where to write to!");
+            setErrorMessage("Error: Display data location is missing! (This should not happen!)");
             return;
         }
         
@@ -88,20 +94,24 @@ export default function Home() {
         db.ref(`/data/${writeTo.current}`).update({
             displayData: `blob,base64,${serializeDisplay(displayValues)}`
         }).then(() => {
-            setSuccess(true);
-            window.setTimeout(() => {
-                setSuccess(false);
-            }, 3000);
+            setSuccessMessage("Display updated!");
         }).catch((err) => {
-            console.log(err);
+            setErrorMessage("Error: Cannot update display: " + err.toString());
         });
     };
 
     return (
         <Layout title="Home" navbarActiveKey="home">
             <Container>
-                {!configOk ? <Alert variant="warning">You need to <Link href="/config">configure some settings</Link> before you can use this app.</Alert> : null}
-                {success ? <Alert variant="success" dismissible onClose={() => setSuccess(false)}>Success!</Alert> : null}
+                <Collapse in={!configOk}>
+                    <div>
+                        <Alert variant="warning">You need to <Link href="/config">configure some settings</Link> before you can use this app.</Alert>
+                    </div>
+                </Collapse>
+                <CollapsedAlert variant="success" dismissible timeout={3000} message={successMessage} setMessage={setSuccessMessage}/>
+                <CollapsedAlert variant="danger" dismissible message={errorMessage} setMessage={setErrorMessage}/>
+
+                
                 <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3">
                         <h3>Update Display</h3>
