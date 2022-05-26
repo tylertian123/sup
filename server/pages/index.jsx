@@ -57,7 +57,7 @@ export default function Home() {
 
     const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
     const [validated, setValidated] = useState(false);
-    const saveOrLoad = useRef(true);
+    const advancedMode = useRef(null);
 
     // Make sure the page is updated when auth state is changed, since the auth user starts out null
     useEffect(() =>
@@ -123,7 +123,7 @@ export default function Home() {
             }
             const data = new FormData(form);
             const location = data.get("dataLocation");
-            if (saveOrLoad.current) {
+            if (advancedMode.current === "save") {
                 db.ref(`/data/${location}`).update({
                     displayData: `blob,base64,${serializeDisplay(displayValues)}`
                 }).then(() => {
@@ -132,7 +132,7 @@ export default function Home() {
                     setErrorMessage("Error: Cannot save display: " + err.toString());
                 });
             }
-            else {
+            else if (advancedMode.current === "load") {
                 db.ref(`/data/${location}/displayData`).get().then((snapshot) => {
                     if (snapshot.exists()) {
                         try {
@@ -147,6 +147,17 @@ export default function Home() {
                         setErrorMessage(`No display data is stored at ${location}!`);
                     }
                 });
+            }
+            else if (advancedMode.current === "delete") {
+                db.ref(`/data/${location}`).remove()
+                .then(() => {
+                    setSuccessMessage("Deleted!");
+                }).catch((err) => {
+                    setErrorMessage("Error: Cannot delete: " + err.toString());
+                });
+            }
+            else {
+                setErrorMessage("Internal error: Invalid mode: " + advancedMode.current);
             }
         }
         setValidated(true);
@@ -188,8 +199,9 @@ export default function Home() {
                                 <Form.Control.Feedback type="invalid">Location must be alphanumeric and can't be empty.</Form.Control.Feedback>
                                 <Form.Text className="text-muted">Save the current display data to or load the display data from another location.</Form.Text>
                             </Form.Group>
-                            <Button type="submit" name="save" onClick={() => saveOrLoad.current = true}>Save</Button>
-                            <Button type="submit" name="load" className="ms-2" onClick={() => saveOrLoad.current = false}>Load</Button>
+                            <Button type="submit" name="save" onClick={() => advancedMode.current = "save"}>Save</Button>
+                            <Button type="submit" name="load" className="mx-2" onClick={() => advancedMode.current = "load"}>Load</Button>
+                            <Button type="submit" name="delete" variant="danger" onClick={() => advancedMode.current = "delete"}>Delete</Button>
                         </Form>
                     </div>
                 </Collapse>
