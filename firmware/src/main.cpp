@@ -25,31 +25,31 @@ void setup() {
     digitalWrite(STATUS_LED, 0);
 
     Serial.begin(115200);
-    DEBUG_OUT(F("Started"));
+    DEBUG_OUT_LN(F("Started"));
 
     config::init();
     if (!config::load_config()) {
-        DEBUG_OUT(F("Failed to load config object, using default values"));
+        DEBUG_OUT_LN(F("Failed to load config object, using default values"));
     }
 
     if (!digitalRead(D1)) {
-        DEBUG_OUT(F("Forcing AP mode"));
+        DEBUG_OUT_LN(F("Forcing AP mode"));
     }
 
     nw::wifi_connect(digitalRead(D1));
 
-    DEBUG_OUT(WiFi.localIP());
+    DEBUG_OUT_LN(WiFi.localIP());
 
     if(!fb::init()) {
-        DEBUG_OUT(F("Failed to connect to Firebase!"));
+        DEBUG_OUT_LN(F("Failed to connect to Firebase!"));
     }
     else {
-        DEBUG_OUT(F("Connected to Firebase"));
+        DEBUG_OUT_LN(F("Connected to Firebase"));
         if (!fb::start_stream()) {
-            DEBUG_OUT(F("Failed to start stream!"));
+            DEBUG_OUT_LN(F("Failed to start stream!"));
         }
         else {
-            DEBUG_OUT(F("Stream started"));
+            DEBUG_OUT_LN(F("Stream started"));
             init_success = true;
         }
     }

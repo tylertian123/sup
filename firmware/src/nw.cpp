@@ -38,11 +38,11 @@ namespace nw {
         }
 
         if (connect_status == WL_CONNECTED) {
-            DEBUG_OUT(F("Connected to saved network"));
+            DEBUG_OUT_LN(F("Connected to saved network"));
             digitalWrite(STATUS_LED, 1);
             return;
         }
-        DEBUG_OUT(F("Can't connect to saved network"));
+        DEBUG_OUT_LN(F("Can't connect to saved network"));
 
 
         // In case of failure, run the access point + config server
@@ -52,14 +52,14 @@ namespace nw {
             // Enable access point
             init_ap();
             if (!MDNS.begin(hostname)) {
-                DEBUG_OUT(F("Can't start mDNS"));
+                DEBUG_OUT_LN(F("Can't start mDNS"));
             }
             {
                 // Run the server until we have the SSID and password
                 ESP8266WebServer server(80);
                 init_server(server);
                 server.begin();
-                DEBUG_OUT(F("Server is online"));
+                DEBUG_OUT_LN(F("Server is online"));
                 while (connect_status != -1) {
                     MDNS.update();
                     server.handleClient();
@@ -69,9 +69,9 @@ namespace nw {
             delay(2000);
             WiFi.softAPdisconnect(true);
 
-            DEBUG_OUT(F("Connecting to SSID/Password:"));
-            DEBUG_OUT(input_ssid);
-            DEBUG_OUT(input_password);
+            DEBUG_OUT_LN(F("Connecting to SSID/Password:"));
+            DEBUG_OUT_LN(input_ssid);
+            DEBUG_OUT_LN(input_password);
 
             // Try connecting
             WiFi.persistent(true);
@@ -83,7 +83,7 @@ namespace nw {
                 counter++;
             }
             if (connect_status != WL_CONNECTED) {
-                DEBUG_OUT(F("Failed to connect!"));
+                DEBUG_OUT_LN(F("Failed to connect!"));
             }
             WiFi.persistent(false);
         }
