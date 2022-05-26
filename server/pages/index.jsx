@@ -51,9 +51,13 @@ export default function Home() {
     const [drawOrClear, setDrawOrClear] = useState(true);
     const [displayValues, setDisplayValues] = useState(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH));
     const writeTo = useRef(null);
-
+    
     const [successMessage, setSuccessMessage] = useState(null);
     const [errorMessage, setErrorMessage] = useState(null);
+
+    const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+    const [validated, setValidated] = useState(false);
+    const saveOrLoad = useRef(true);
 
     // Make sure the page is updated when auth state is changed, since the auth user starts out null
     useEffect(() =>
@@ -85,7 +89,7 @@ export default function Home() {
         });
     }
 
-    const handleSubmit = (event) => {
+    const handleDisplaySubmit = (event) => {
         event.preventDefault();
         event.stopPropagation();
         
@@ -108,6 +112,46 @@ export default function Home() {
         });
     };
 
+    const handleAdvancedSubmit = (event) => {
+        const form = event.currentTarget;
+        event.preventDefault();
+        event.stopPropagation();
+        if (form.checkValidity() === true) {
+            if (!loginUser) {
+                setErrorMessage("Error: Not logged in! (This should not happen!)");
+                return;
+            }
+            const data = new FormData(form);
+            const location = data.get("dataLocation");
+            if (saveOrLoad.current) {
+                db.ref(`/data/${location}`).update({
+                    displayData: `blob,base64,${serializeDisplay(displayValues)}`
+                }).then(() => {
+                    setSuccessMessage("Saved!");
+                }).catch((err) => {
+                    setErrorMessage("Error: Cannot save display: " + err.toString());
+                });
+            }
+            else {
+                db.ref(`/data/${location}/displayData`).get().then((snapshot) => {
+                    if (snapshot.exists()) {
+                        try {
+                            setDisplayValues(deserializeDisplay(snapshot.val().slice("blob,base64,".length), 8 * DISPLAY_WIDTH));
+                            setSuccessMessage("Loaded!");
+                        }
+                        catch (_e) {
+                            setErrorMessage(`Error: Can't load display data because it's not in the expected format! (data: ${snapshot.val()})`)
+                        }
+                    }
+                    else {
+                        setErrorMessage(`No display data is stored at ${location}!`);
+                    }
+                });
+            }
+        }
+        setValidated(true);
+    };
+
     return (
         <Layout title="Home" navbarActiveKey="home">
             <Container>
@@ -120,7 +164,7 @@ export default function Home() {
                 <CollapsedAlert variant="danger" dismissible message={errorMessage} setMessage={setErrorMessage}/>
 
                 
-                <Form onSubmit={handleSubmit}>
+                <Form onSubmit={handleDisplaySubmit} className="mb-3">
                     <h3>Update Display</h3>
                     <Form.Group className="mb-2">
                         <ToggleButtonGroup type="radio" size="sm" name="mode" defaultValue={true} onChange={(value) => setDrawOrClear(value)}>
@@ -133,7 +177,22 @@ export default function Home() {
                     </Form.Group>
                     <Button type="submit" disabled={!configOk}>Save</Button>
                     <Button className="ms-2" variant="danger" disabled={!configOk} onClick={() => setDisplayValues(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH))}>Clear</Button>
+                    <Button className="ms-2" disabled={!configOk} onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}>Advanced Options</Button>
                 </Form>
+                <Collapse in={showAdvancedOptions}>
+                    <div className="rounded border border-secondary p-2">
+                        <Form noValidate validated={validated} onSubmit={handleAdvancedSubmit}>
+                            <Form.Group className="mb-2">
+                                <Form.Label>Save to/Load from</Form.Label>
+                                <Form.Control name="dataLocation" required type="text" pattern="[a-zA-Z0-9-]+" className="w-50 bg-white"/>
+                                <Form.Control.Feedback type="invalid">Location must be alphanumeric and can't be empty.</Form.Control.Feedback>
+                                <Form.Text className="text-muted">Save the current display data to or load the display data from another location.</Form.Text>
+                            </Form.Group>
+                            <Button type="submit" name="save" onClick={() => saveOrLoad.current = true}>Save</Button>
+                            <Button type="submit" name="load" className="ms-2" onClick={() => saveOrLoad.current = false}>Load</Button>
+                        </Form>
+                    </div>
+                </Collapse>
             </Container>
         </Layout>
     );
