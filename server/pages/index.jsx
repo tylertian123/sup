@@ -18,6 +18,10 @@ try {
 } catch (e) {}
 
 function serializeDisplay(values) {
+    // Call unpackValues() to unpack into 2D pixel grid, then flat() to flatten into 1D array
+    // reduce() to convert every 8 bits to a numerical byte
+    // Use destructuring to convert array of bytes (char codes) into binary string
+    // And finally convert to base64
     return window.btoa(String.fromCharCode(...unpackValues(values).flat().reduce((data, bit, i) => {
         if (i % 8 == 0) {
             data.push(bit);
@@ -30,6 +34,9 @@ function serializeDisplay(values) {
 }
 
 function deserializeDisplay(b64Data, width) {
+    // Convert from base64 to binary string, then use destructuring to convert it into a character array
+    // map() to convert every character to an array of 8 booleans, making a 2D array, which is then flattened
+    // Then reduce to group every width booleans, making a 2D pixel grid, and then pass to packValues()
     return packValues([...window.atob(b64Data)].map(
         (c) => new Array(8).fill(null).map(
             (_e, i) => (c.charCodeAt(0) & (1 << (7 - i))) !== 0

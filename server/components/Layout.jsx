@@ -7,6 +7,8 @@ import Head from "next/head";
 import Link from "next/link";
 import { Button, Container, Nav, Navbar, Spinner } from "react-bootstrap";
 
+import styles from './Layout.module.css'
+
 
 const firebaseConfig = require('../pages/firebase-config.json').result.sdkConfig;
 const firebaseApp = firebase.initializeApp(firebaseConfig);
@@ -15,6 +17,8 @@ export default function Layout({ children, title = "Sup", requireSignIn = true }
     const [loginUser, setLoginUser] = useState(null);
 
     const router = useRouter();
+    // Register auth state callback
+    // Update login user and UI if logged in, otherwise redirect to login page
     useEffect(() =>
         firebase.auth().onAuthStateChanged((user) => {
             if (requireSignIn) {
@@ -54,8 +58,8 @@ export default function Layout({ children, title = "Sup", requireSignIn = true }
                 </Container>
             </Navbar>
 
-            {requireSignIn && !loginUser ? <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <Spinner animation="border" role="status" /></div>
+            {requireSignIn && !loginUser
+                ? <div className={styles.spinner}><Spinner animation="border" role="status" /></div>
                 : children}
         </>
     );
