@@ -7,7 +7,7 @@
     appearance: none;
     -webkit-appearance: none;
     outline: none;
-    cursor: pointer;
+    cursor: crosshair;
     aspect-ratio: 1;
 }
 
@@ -20,4 +20,5 @@
     background-color: #111;
     gap: 3px;
     padding: 1.5px;
+    cursor: crosshair;
 }

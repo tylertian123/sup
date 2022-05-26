@@ -6,7 +6,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "next dev",
     "build": "next build && next export",
-    "createfirebaseconf": "firebase apps:sdkconfig web --json > ./pages/firebase-config.json"
+    "createfirebaseconf": "firebase apps:sdkconfig web --json > ./pages/firebase-config.json",
+    "deploy": "npm run build && firebase deploy --only hosting"
   },
   "author": "Tyler Tian",
   "dependencies": {
