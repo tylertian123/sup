@@ -1,7 +1,7 @@
 import styles from './Display.module.css'
 import { useEffect, useRef } from 'react';
 
-export default function Display({ values, setValues, style = {} }) {
+export default function Display({ values, setValues, drawOrClear = true, style = {} }) {
     const cols = values[0].length;
     const mouseDown = useRef(false);
 
@@ -30,9 +30,9 @@ export default function Display({ values, setValues, style = {} }) {
             (state, j) =>
                 <input key={[i, j]} type="checkbox" className={styles.led} checked={state} 
                     onChange={onChange.bind(null, i, j)}
-                    onMouseOver={(event) => {
+                    onMouseMove={(event) => {
                         if (mouseDown.current) {
-                            event.currentTarget.checked = !event.currentTarget.checked;
+                            event.currentTarget.checked = drawOrClear;
                             onChange(i, j, event);
                         }
                     }} />

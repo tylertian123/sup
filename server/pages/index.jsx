@@ -3,7 +3,7 @@ import 'firebase/compat/database';
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Button, Collapse, Container, Form } from 'react-bootstrap';
+import { Alert, Button, ButtonGroup, Collapse, Container, Form, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
 
 import Layout from '../components/Layout';
 import MultiDisplay, { createDefaultValues, packValues, unpackValues } from '../components/MultiDisplay'
@@ -48,6 +48,7 @@ function deserializeDisplay(b64Data, width) {
 export default function Home() {
     const [loginUser, setLoginUser] = useState(null);
     const [configOk, setConfigOk] = useState(true);
+    const [drawOrClear, setDrawOrClear] = useState(true);
     const [displayValues, setDisplayValues] = useState(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH));
     const writeTo = useRef(null);
 
@@ -120,12 +121,18 @@ export default function Home() {
 
                 
                 <Form onSubmit={handleSubmit}>
-                    <Form.Group className="mb-3">
-                        <h3>Update Display</h3>
-                        <MultiDisplay values={displayValues} setValues={setDisplayValues}></MultiDisplay>
+                    <h3>Update Display</h3>
+                    <Form.Group className="mb-2">
+                        <ToggleButtonGroup type="radio" size="sm" name="mode" defaultValue={true} onChange={(value) => setDrawOrClear(value)}>
+                            <ToggleButton value={true} id="mode-radio-1" variant="outline-secondary">Draw</ToggleButton>
+                            <ToggleButton value={false} id="mode-radio-2" variant="outline-secondary">Erase</ToggleButton>
+                        </ToggleButtonGroup>
                     </Form.Group>
-                    <Button type="submit" disabled={!configOk}>Submit</Button>
-                    <Button className="mx-2" variant="danger" disabled={!configOk} onClick={() => setDisplayValues(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH))}>Clear</Button>
+                    <Form.Group className="mb-3">
+                        <MultiDisplay values={displayValues} setValues={setDisplayValues} drawOrClear={drawOrClear}></MultiDisplay>
+                    </Form.Group>
+                    <Button type="submit" disabled={!configOk}>Save</Button>
+                    <Button className="ms-2" variant="danger" disabled={!configOk} onClick={() => setDisplayValues(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH))}>Clear</Button>
                 </Form>
             </Container>
         </Layout>
