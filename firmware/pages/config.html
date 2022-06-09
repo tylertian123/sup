@@ -26,11 +26,11 @@
     <h2>Connect to Wi-Fi</h2>
     <p>Current status: %s</p>
     <form method="post" action="/wifi-connect" enctype="application/x-www-form-urlencoded">
-        <label>Network Name (SSID):<br>
-            <input type="text" name="ssid" required>
+        <label>Network Name (SSID): <em>(max. 31 characters)</em><br>
+            <input type="text" name="ssid" required pattern=".{1,31}">
         </label><br>
-        <label>Password:<br>
-            <input type="password" name="password" required>
+        <label>Password: <em>(max. 63 characters)</em><br>
+            <input type="password" name="password" required pattern=".{1,63}">
         </label><br>
         <input type="submit" value="Connect">
     </form><br>
@@ -39,11 +39,11 @@
         <summary>Click to show current password</summary> %s
     </details>
     <form method="post" action="/ap-setup" enctype="application/x-www-form-urlencoded">
-        <label>Network Name (SSID):<br>
-            <input type="text" name="ssid" value=%s required>
+        <label>Network Name (SSID): <em>(max. 31 characters)</em><br>
+            <input type="text" name="ssid" value=%s required pattern=".{1,31}">
         </label><br>
-        <label>Password:<br>
-            <input type="password" name="password" required>
+        <label>Password: <em>(max. 31 characters)</em><br>
+            <input type="password" name="password" required pattern=".{1,31}">
         </label><br>
         <input type="submit" value="Update">
     </form>
