@@ -7,10 +7,10 @@
 </head>
 
 <body>
-    <h2>Setup</h2>
+    <h1>Setup</h1>
     <details>
         <summary>Click to show current password</summary> %s
-    </details>
+    </details><br>
     <form method="post" action="/db-credentials" enctype="application/x-www-form-urlencoded">
         <label>Email:<br>
             <input type="text" name="email" value=%s required>
@@ -23,21 +23,47 @@
         </label><br>
         <input type="submit" value="Update">
     </form>
-    <h2>Connect to Wi-Fi</h2>
-    <p>Current status: %s</p>
-    <form method="post" action="/wifi-connect" enctype="application/x-www-form-urlencoded">
-        <label>Network Name (SSID):<br>
-            <input type="text" name="ssid" required>
-        </label><br>
-        <label>Password:<br>
-            <input type="password" name="password" required>
-        </label><br>
-        <input type="submit" value="Connect">
-    </form><br>
-    <h2>Configure Hosted Access Point Settings</h2>
+
+
+    <h1>Connect to Wi-Fi</h1>
+    <p>Current status: <strong>%s</strong>, using <strong>%s</strong></p>
+    <details>
+        <summary>Click to show current enterprise password</summary> %s
+    </details><br>
+    <div class="block">
+        <h3>WPA2-PSK</h3>
+        <form method="post" action="/wifi-connect" enctype="application/x-www-form-urlencoded">
+            <label>Network Name (SSID):<br>
+                <input type="text" name="ssid" required>
+            </label><br>
+            <label>Password:<br>
+                <input type="password" name="password" required>
+            </label><br>
+            <input type="submit" value="Connect">
+        </form>
+    </div>
+    <p class="block"><em>... or ...</em></p>
+    <div class="block">
+        <h3>WPA2-Enterprise</h3>
+        <form method="post" action="/wifi-connect-enterprise" enctype="application/x-www-form-urlencoded">
+            <label>Network Name (SSID):<br>
+                <input type="text" name="ssid" value="%s" required>
+            </label><br>
+            <label>Username:<br>
+                <input type="text" name="username" value="%s" required>
+            </label><br>
+            <label>Password:<br>
+                <input type="password" name="password" required>
+            </label><br>
+            <input type="submit" value="Connect">
+        </form>
+    </div>
+
+
+    <h1>Configure Hosted Access Point Settings</h1>
     <details>
         <summary>Click to show current password</summary> %s
-    </details>
+    </details><br>
     <form method="post" action="/ap-setup" enctype="application/x-www-form-urlencoded">
         <label>Network Name (SSID):<br>
             <input type="text" name="ssid" value=%s required>

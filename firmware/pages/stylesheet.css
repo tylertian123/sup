@@ -9,10 +9,31 @@ details {
     border-radius: 5px;
     border: 1px solid #aaa;
 }
-form, p {
+
+h1 {
+    margin-top: 1em;
+    margin-bottom: 0.3em;
+}
+
+h3 {
+    margin-bottom: 0em;
+    margin-top: 0.5em;
+}
+
+p {
     margin: 5px;
 }
+
+form {
+    margin: 5px;
+}
+
 input {
     margin-top: 3px;
     margin-bottom: 3px;
+}
+
+.block {
+    display: inline-block;
+    vertical-align: top;
 }

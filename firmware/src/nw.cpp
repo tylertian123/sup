@@ -184,6 +184,10 @@ namespace nw {
                 config::global_config.db_auth_email,
                 config::global_config.db_data_location,
                 status_str,
+                config::global_config.ent_enabled ? "WPA2-Enterprise" : "WPA2-PSK",
+                config::global_config.ent_password,
+                config::global_config.ent_ssid,
+                config::global_config.ent_username,
                 config::global_config.ap_password,
                 config::global_config.ap_ssid);
 
