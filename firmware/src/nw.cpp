@@ -1,11 +1,23 @@
 #include "nw.h"
 #include "common.h"
 #include "config.h"
+#include "page_content.h"
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <stdio.h>
+#include <string.h>
+
+
+void quoted(char *buf, const char *str, char quote = '\"') {
+    buf[0] = quote;
+    strcpy(buf + 1, str);
+    int len = strlen(str);
+    buf[len] = quote;
+    buf[len + 1] = '\0';
+}
+
 
 namespace nw {
 
@@ -102,9 +114,7 @@ namespace nw {
             server.send(301, "text/plain", "");
         });
         server.on("/stylesheet.css", HTTP_GET, [&server]() {
-            server.send_P(200, "text/css", PSTR(
-                "body {font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;font-size: 16px;}details {display: inline-block;padding: 7px;border-radius: 5px;border: 1px solid #aaa;}form, p {margin: 5px;}input {margin-top: 3px;margin-bottom: 3px;}"
-            ));
+            server.send_P(200, "text/css", PSTR(PAGE_CONTENT_STYLESHEET_CSS));
         });
         // For debug
         server.on("/status", HTTP_GET, [&server]() {
@@ -139,9 +149,14 @@ namespace nw {
                 break;
             }
             char buf[2048];
-            snprintf_P(buf, sizeof(buf), PSTR(
-                "<!DOCTYPE html><html><head> <title>Configuration</title> <link rel=\"stylesheet\" type=\"text/css\" href=\"stylesheet.css\"></head><body> <h2>Setup</h2> <details> <summary>Click to show current password</summary> %s </details> <form method=\"post\" action=\"/db-credentials\" enctype=\"application/x-www-form-urlencoded\"> <label>Email:<br><input type=\"text\" name=\"email\" value=\"%s\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><label>Display Data Location:<br><input type=\"text\" name=\"location\" required pattern=\"[a-zA-Z0-9-]{1,31}\" value=\"%s\"></label><br><input type=\"submit\" value=\"Update\"> </form> <h2>Connect to Wi-Fi</h2> <p>Current status: %s</p><form method=\"post\" action=\"/wifi-connect\" enctype=\"application/x-www-form-urlencoded\"> <label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Connect\"> </form><br><h2>Configure Hosted Access Point Settings</h2> <details> <summary>Click to show current password</summary> %s </details> <form method=\"post\" action=\"/ap-setup\" enctype=\"application/x-www-form-urlencoded\"> <label>Network Name (SSID):<br><input type=\"text\" name=\"ssid\" value=\"%s\" required></label><br><label>Password:<br><input type=\"password\" name=\"password\" required></label><br><input type=\"submit\" value=\"Update\"> </form></body></html>"
-            ), config::global_config.db_auth_password, config::global_config.db_auth_email, config::global_config.db_data_location, status_str, config::global_config.ap_password, config::global_config.ap_ssid);
+            
+            snprintf_P(buf, sizeof(buf), PSTR(PAGE_CONTENT_CONFIG_HTML),
+                config::global_config.db_auth_password,
+                config::global_config.db_auth_email,
+                config::global_config.db_data_location,
+                status_str,
+                config::global_config.ap_password,
+                config::global_config.ap_ssid);
 
             server.send(200, "text/html", buf);
         });

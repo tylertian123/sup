@@ -3,3 +3,4 @@
 compile_commands.json
 
 include/secrets.h
+include/page_content.h
