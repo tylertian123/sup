@@ -3,6 +3,10 @@
 #include "config.h"
 #include "page_content.h"
 
+#include "user_interface.h"
+#include "wpa2_enterprise.h"
+#include "c_types.h"
+
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -31,6 +35,30 @@ namespace nw {
     int connect_status = WL_DISCONNECTED;
     String input_ssid, input_password;
 
+    void enterprise_connect(const char *ssid, const char *username, const char *identity, const char *password) {
+        wifi_set_opmode(STATION_MODE);
+
+        station_config conf;
+        memset(&conf, 0, sizeof(station_config));
+        strncpy(reinterpret_cast<char *>(conf.ssid), ssid, 32);
+        strncpy(reinterpret_cast<char *>(conf.password), password, 64);
+        wifi_station_set_config_current(&conf);
+
+        wifi_station_set_wpa2_enterprise_auth(true);
+        wifi_station_clear_cert_key();
+        wifi_station_clear_enterprise_ca_cert();
+        wifi_station_clear_enterprise_identity();
+        wifi_station_clear_enterprise_username();
+        wifi_station_clear_enterprise_password();
+        wifi_station_clear_enterprise_new_password();
+
+        wifi_station_set_enterprise_identity(const_cast<u8*>(reinterpret_cast<const u8*>(identity)), strlen(identity));
+        wifi_station_set_enterprise_username(const_cast<u8*>(reinterpret_cast<const u8*>(username)), strlen(username));
+        wifi_station_set_enterprise_password(const_cast<u8*>(reinterpret_cast<const u8*>(password)), strlen(password));
+
+        wifi_station_connect();
+    }
+
     void wifi_connect(bool use_saved) {
         // Try to connect with saved network
         WiFi.persistent(false);
@@ -39,6 +67,7 @@ namespace nw {
 
         connect_status = -2;
         if (use_saved) {
+
             WiFi.begin();
 
             int counter = 0;
