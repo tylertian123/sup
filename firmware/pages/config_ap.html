@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Hosted Access Point Configuration</title>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css">
+</head>
+
+<body>
+    <h1>Hosted Access Point Settings</h1>
+    <details>
+        <summary>Click to show current password</summary> %s
+    </details><br>
+    <form method="post" action="/ap-setup" enctype="application/x-www-form-urlencoded">
+        <label>Network Name (SSID):<br>
+            <input type="text" name="ssid" value=%s required pattern=".{1,31}">
+        </label><br>
+        <label>Password:<br>
+            <input type="password" name="password" required pattern=".{1,31}">
+        </label><br>
+        <input type="submit" value="Update">
+    </form>
+</body>
+
+</html>

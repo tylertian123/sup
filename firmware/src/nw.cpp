@@ -156,6 +156,19 @@ namespace nw {
         });
         // Main configuration UI
         server.on("/config", HTTP_GET, [&server]() {
+            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_CONFIG_HTML));
+        });
+        server.on("/config-db", HTTP_GET, [&server]() {
+            char buf[2048];
+            snprintf_P(buf, sizeof(buf), PSTR(PAGE_CONTENT_CONFIG_DB_HTML),
+                config::global_config.db_auth_password,
+                config::global_config.db_auth_email,
+                config::global_config.db_data_location
+            );
+
+            server.send(200, "text/html", buf);
+        });
+        server.on("/config-wifi", HTTP_GET, [&server]() {
             const char *status_str;
             switch (connect_status) {
             case WL_NO_SSID_AVAIL:
@@ -182,17 +195,21 @@ namespace nw {
             }
             char buf[2048];
             
-            snprintf_P(buf, sizeof(buf), PSTR(PAGE_CONTENT_CONFIG_HTML),
-                config::global_config.db_auth_password,
-                config::global_config.db_auth_email,
-                config::global_config.db_data_location,
+            snprintf_P(buf, sizeof(buf), PSTR(PAGE_CONTENT_CONFIG_WIFI_HTML),
                 status_str,
                 config::global_config.ent_enabled ? "WPA2-Enterprise" : "WPA2-PSK",
                 config::global_config.ent_password,
                 config::global_config.ent_ssid,
-                config::global_config.ent_username,
+                config::global_config.ent_username);
+
+            server.send(200, "text/html", buf);
+        });
+        server.on("/config-ap", HTTP_GET, [&server]() {
+            char buf[2048];
+            snprintf_P(buf, sizeof(buf), PSTR(PAGE_CONTENT_CONFIG_AP_HTML),
                 config::global_config.ap_password,
-                config::global_config.ap_ssid);
+                config::global_config.ap_ssid
+            );
 
             server.send(200, "text/html", buf);
         });

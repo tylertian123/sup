@@ -7,72 +7,27 @@
 </head>
 
 <body>
-    <h1>Setup</h1>
-    <details>
-        <summary>Click to show current password</summary> %s
-    </details><br>
-    <form method="post" action="/db-credentials" enctype="application/x-www-form-urlencoded">
-        <label>Email:<br>
-            <input type="text" name="email" value=%s required pattern=".{1-63}">
-        </label><br>
-        <label>Password:<br>
-            <input type="password" name="password" required pattern=".{1-31}">
-        </label><br>
-        <label>Display Data Location:<br>
-            <input type="text" name="location" required pattern="[a-zA-Z0-9-]{1,31}" value=%s>
-        </label><br>
-        <input type="submit" value="Update">
-    </form>
-
-
-    <h1>Connect to Wi-Fi</h1>
-    <p>Current status: <strong>%s</strong>, using <strong>%s</strong></p>
-    <details>
-        <summary>Click to show current enterprise password</summary> %s
-    </details><br>
-    <div class="block">
-        <h3>WPA2-PSK</h3>
-        <form method="post" action="/wifi-connect" enctype="application/x-www-form-urlencoded">
-            <label>Network Name (SSID):<br>
-                <input type="text" name="ssid" required pattern=".{1-31}">
-            </label><br>
-            <label>Password:<br>
-                <input type="password" name="password" required pattern=".{1-63}">
-            </label><br>
-            <input type="submit" value="Connect">
-        </form>
-    </div>
-    <p class="block"><em>... or ...</em></p>
-    <div class="block">
-        <h3>WPA2-Enterprise</h3>
-        <form method="post" action="/wifi-connect-enterprise" enctype="application/x-www-form-urlencoded">
-            <label>Network Name (SSID):<br>
-                <input type="text" name="ssid" value="%s" required pattern=".{1-31}">
-            </label><br>
-            <label>Username:<br>
-                <input type="text" name="username" value="%s" required pattern=".{1-31}">
-            </label><br>
-            <label>Password:<br>
-                <input type="password" name="password" required pattern=".{1-63}">
-            </label><br>
-            <input type="submit" value="Connect">
-        </form>
-    </div>
-
-
-    <h1>Configure Hosted Access Point Settings</h1>
-    <details>
-        <summary>Click to show current password</summary> %s
-    </details><br>
-    <form method="post" action="/ap-setup" enctype="application/x-www-form-urlencoded">
-        <label>Network Name (SSID):<br>
-            <input type="text" name="ssid" value=%s required pattern=".{1,31}">
-        </label><br>
-        <label>Password:<br>
-            <input type="password" name="password" required pattern=".{1,31}">
-        </label><br>
-        <input type="submit" value="Update">
-    </form>
+    <h1>Configuration</h1>
+    <ul style="list-style: none; padding-left: 1em;">
+        <li>
+            <a href="/config-db">Database Connection</a>
+            <ul>
+                <li>Enter email and password for logging in and set the display data location.</li>
+            </ul>
+        </li>
+        <li>
+            <a href="/config-wifi">Wi-Fi Settings</a>
+            <ul>
+                <li>Connect to a Wi-Fi network with either WPA2-PSK (usually home Wi-Fi) or WPA2-Enterprise (usually work or school Wi-Fi).</li>
+            </ul>
+        </li>
+        <li>
+            <a href="/config-ap">Hosted Access Point Settings</a>
+            <ul>
+                <li>Configure the name and password of the hosted access point (i.e. the Wi-Fi network you're connected to right now).</li>
+            </ul>
+        </li>
+    </ul>
 </body>
 
 </html>
