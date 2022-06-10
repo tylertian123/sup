@@ -9,17 +9,17 @@
 <body>
     <h1>Database Connection Setup</h1>
     <details>
-        <summary>Click to show current password</summary> %s
+        <summary>Current Password</summary> %s
     </details><br>
     <form method="post" action="/db-credentials" enctype="application/x-www-form-urlencoded">
         <label>Email:<br>
-            <input type="text" name="email" value=%s required pattern=".{1-63}">
+            <input type="text" name="email" value="%s" required pattern=".{1-63}">
         </label><br>
         <label>Password:<br>
-            <input type="password" name="password" required pattern=".{1-31}">
+            <input type="password" name="password" value="%s" required pattern=".{1-31}">
         </label><br>
         <label>Display Data Location:<br>
-            <input type="text" name="location" required pattern="[a-zA-Z0-9-]{1,31}" value=%s>
+            <input type="text" name="location" value="%s" required pattern="[a-zA-Z0-9-]{1,31}">
         </label><br>
         <input type="submit" value="Update">
     </form>

@@ -163,6 +163,7 @@ namespace nw {
             snprintf_P(buf, sizeof(buf), PSTR(PAGE_CONTENT_CONFIG_DB_HTML),
                 config::global_config.db_auth_password,
                 config::global_config.db_auth_email,
+                config::global_config.db_auth_password,
                 config::global_config.db_data_location
             );
 
@@ -193,14 +194,23 @@ namespace nw {
                 status_str = PSTR("Unknown");
                 break;
             }
+
+            // Get the saved network SSID and password
+            station_config conf;
+            wifi_station_get_config_default(&conf);
+
             char buf[2048];
             
             snprintf_P(buf, sizeof(buf), PSTR(PAGE_CONTENT_CONFIG_WIFI_HTML),
                 status_str,
                 config::global_config.ent_enabled ? "WPA2-Enterprise" : "WPA2-PSK",
+                conf.password,
+                conf.ssid,
+                conf.password,
                 config::global_config.ent_password,
                 config::global_config.ent_ssid,
-                config::global_config.ent_username);
+                config::global_config.ent_username,
+                config::global_config.ent_password);
 
             server.send(200, "text/html", buf);
         });
@@ -208,7 +218,8 @@ namespace nw {
             char buf[2048];
             snprintf_P(buf, sizeof(buf), PSTR(PAGE_CONTENT_CONFIG_AP_HTML),
                 config::global_config.ap_password,
-                config::global_config.ap_ssid
+                config::global_config.ap_ssid,
+                config::global_config.ap_password
             );
 
             server.send(200, "text/html", buf);

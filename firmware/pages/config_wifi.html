@@ -9,17 +9,17 @@
 <body>
     <h1>Connect to Wi-Fi</h1>
     <p>Current status: <strong>%s</strong>, using <strong>%s</strong></p>
-    <details>
-        <summary>Click to show current enterprise password</summary> %s
-    </details><br>
     <div class="block">
         <h3>WPA2-PSK</h3>
+        <details>
+            <summary>Current Password</summary> %s
+        </details><br>
         <form method="post" action="/wifi-connect" enctype="application/x-www-form-urlencoded">
             <label>Network Name (SSID):<br>
-                <input type="text" name="ssid" required pattern=".{1-31}">
+                <input type="text" name="ssid" value="%s" required pattern=".{1-31}">
             </label><br>
             <label>Password:<br>
-                <input type="password" name="password" required pattern=".{1-63}">
+                <input type="password" name="password" value="%s" required pattern=".{1-63}">
             </label><br>
             <input type="submit" value="Connect">
         </form>
@@ -27,6 +27,9 @@
     <p class="block"><em>... or ...</em></p>
     <div class="block">
         <h3>WPA2-Enterprise</h3>
+        <details>
+            <summary>Current Password</summary> %s
+        </details><br>
         <form method="post" action="/wifi-connect-enterprise" enctype="application/x-www-form-urlencoded">
             <label>Network Name (SSID):<br>
                 <input type="text" name="ssid" value="%s" required pattern=".{1-31}">
@@ -35,7 +38,7 @@
                 <input type="text" name="username" value="%s" required pattern=".{1-31}">
             </label><br>
             <label>Password:<br>
-                <input type="password" name="password" required pattern=".{1-63}">
+                <input type="password" name="password" value="%s" required pattern=".{1-63}">
             </label><br>
             <input type="submit" value="Connect">
         </form>
