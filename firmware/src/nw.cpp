@@ -234,7 +234,7 @@ namespace nw {
             strncpy(config::global_config.db_auth_password, server.arg("password").c_str(), 32);
             strncpy(config::global_config.db_data_location, server.arg("location").c_str(), 32);
             config::save_config();
-            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_DB_SUCCESS_HTML));
+            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_SUCCESS_HTML));
         });
         server.on("/ap-setup", HTTP_POST, [&server]() {
             if (!server.hasArg("ssid") && server.hasArg("password")) {
@@ -244,7 +244,7 @@ namespace nw {
             strncpy(config::global_config.ap_ssid, server.arg("ssid").c_str(), 32);
             strncpy(config::global_config.ap_password, server.arg("password").c_str(), 32);
             config::save_config();
-            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_AP_SUCCESS_HTML));
+            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_SUCCESS_HTML));
         });
     }
 }
