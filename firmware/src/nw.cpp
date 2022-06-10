@@ -197,10 +197,10 @@ namespace nw {
 
             // Get the saved network SSID and password
             station_config conf;
+            memset(&conf, 0, sizeof(conf));
             wifi_station_get_config_default(&conf);
 
             char buf[2048];
-            
             snprintf_P(buf, sizeof(buf), PSTR(PAGE_CONTENT_CONFIG_WIFI_HTML),
                 status_str,
                 config::global_config.ent_enabled ? "WPA2-Enterprise" : "WPA2-PSK",
@@ -210,7 +210,8 @@ namespace nw {
                 config::global_config.ent_password,
                 config::global_config.ent_ssid,
                 config::global_config.ent_username,
-                config::global_config.ent_password);
+                config::global_config.ent_password
+                );
 
             server.send(200, "text/html", buf);
         });
@@ -226,18 +227,36 @@ namespace nw {
         });
         // Config backend
         server.on("/wifi-connect", HTTP_POST, [&server]() {
-            if (!server.hasArg("ssid") && server.hasArg("password")) {
+            if (!(server.hasArg("ssid") && server.hasArg("password"))) {
                 server.send(400, "text/plain", "Bad Request");
                 return;
             }
             input_ssid = server.arg("ssid");
             input_password = server.arg("password");
+            // Disable enterprise wifi if it's not already disabled
+            if (config::global_config.ent_enabled) {
+                config::global_config.ent_enabled = false;
+                config::save_config();
+            }
             server.send_P(200, "text/html", PSTR(PAGE_CONTENT_WIFI_SUCCESS_HTML));
             // Set this to indicate that we should reconnect now
             connect_status = -1;
         });
+        server.on("/wifi-connect-enterprise", HTTP_POST, [&server]() {
+            if (!(server.hasArg("ssid") && server.hasArg("username") && server.hasArg("password"))) {
+                server.send(400, "text/plain", "Bad Request");
+                return;
+            }
+            strncpy(config::global_config.ent_ssid, server.arg("ssid").c_str(), 32);
+            strncpy(config::global_config.ent_username, server.arg("username").c_str(), 32);
+            strncpy(config::global_config.ent_password, server.arg("password").c_str(), 64);
+            config::global_config.ent_enabled = true;
+            config::save_config();
+            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_WIFI_SUCCESS_HTML));
+            connect_status = -1;
+        });
         server.on("/db-credentials", HTTP_POST, [&server]() {
-            if (!server.hasArg("email") && server.hasArg("password") && server.hasArg("location")) {
+            if (!(server.hasArg("email") && server.hasArg("password") && server.hasArg("location"))) {
                 server.send(400, "text/plain", "Bad Request");
                 return;
             }
@@ -248,7 +267,7 @@ namespace nw {
             server.send_P(200, "text/html", PSTR(PAGE_CONTENT_SUCCESS_HTML));
         });
         server.on("/ap-setup", HTTP_POST, [&server]() {
-            if (!server.hasArg("ssid") && server.hasArg("password")) {
+            if (!(server.hasArg("ssid") && server.hasArg("password"))) {
                 server.send(400, "text/plain", "Bad Request");
                 return;
             }
