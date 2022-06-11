@@ -62,6 +62,34 @@ namespace nw {
         wifi_station_connect();
     }
 
+    void decode_wifi_status(int status, char *buf) {
+        const char *status_str;
+        switch (status) {
+        case WL_NO_SSID_AVAIL:
+            status_str = PSTR("Connect Failed (Invalid SSID)");
+            break;
+        case WL_CONNECTED:
+            status_str = PSTR("Connected");
+            break;
+        case WL_CONNECT_FAILED:
+            status_str = PSTR("Connect Failed");
+            break;
+        case WL_WRONG_PASSWORD:
+            status_str = PSTR("Connect Failed (Wrong Password)");
+            break;
+        case WL_DISCONNECTED:
+            status_str = PSTR("Not Connected");
+            break;
+        case -2:
+            status_str = PSTR("Not Connected (Manually Skipped)");
+            break;
+        default:
+            status_str = PSTR("Unknown");
+            break;
+        }
+        strcpy_P(buf, status_str);
+    }
+
     void wifi_connect(bool use_saved) {
         // Try to connect with saved network
         WiFi.persistent(false);
@@ -94,7 +122,9 @@ namespace nw {
             digitalWrite(STATUS_LED, 1);
             return;
         }
-        DEBUG_OUT_LN(F("Can't connect to saved network"));
+        char status_str[64];
+        decode_wifi_status(connect_status, status_str);
+        DEBUG_OUT_FP(PSTR("Can't connect to saved network: %s\n"), status_str);
 
 
         // In case of failure, run the access point + config server
@@ -189,31 +219,8 @@ namespace nw {
             delete[] buf;
         });
         server.on("/config-wifi", HTTP_GET, [&server]() {
-            const char *status_str;
-            switch (connect_status) {
-            case WL_NO_SSID_AVAIL:
-                status_str = PSTR("Connect Failed (Invalid SSID)");
-                break;
-            case WL_CONNECTED:
-                status_str = PSTR("Connected");
-                break;
-            case WL_CONNECT_FAILED:
-                status_str = PSTR("Connect Failed");
-                break;
-            case WL_WRONG_PASSWORD:
-                status_str = PSTR("Connect Failed (Wrong Password)");
-                break;
-            case WL_DISCONNECTED:
-                status_str = PSTR("Not Connected");
-                break;
-            case -2:
-                status_str = PSTR("Not Connected (Manually Skipped)");
-                break;
-            default:
-                status_str = PSTR("Unknown");
-                break;
-            }
-
+            char status_str[64];
+            decode_wifi_status(connect_status, status_str);
             // Get the saved network SSID and password
             station_config conf;
             memset(&conf, 0, sizeof(conf));
