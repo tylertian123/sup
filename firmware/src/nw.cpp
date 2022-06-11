@@ -159,8 +159,10 @@ namespace nw {
             server.send_P(200, "text/html", PSTR(PAGE_CONTENT_CONFIG_HTML));
         });
         server.on("/config-db", HTTP_GET, [&server]() {
-            char buf[2048];
-            snprintf_P(buf, sizeof(buf), PSTR(PAGE_CONTENT_CONFIG_DB_HTML),
+            constexpr size_t buf_size = 1024;
+            static_assert(sizeof(PAGE_CONTENT_CONFIG_DB_HTML) + 256 < buf_size, "Buffer too small");
+            char *buf = new char[buf_size];
+            snprintf_P(buf, buf_size, PSTR(PAGE_CONTENT_CONFIG_DB_HTML),
                 config::global_config.db_auth_password,
                 config::global_config.db_auth_email,
                 config::global_config.db_auth_password,
@@ -168,6 +170,7 @@ namespace nw {
             );
 
             server.send(200, "text/html", buf);
+            delete[] buf;
         });
         server.on("/config-wifi", HTTP_GET, [&server]() {
             const char *status_str;
@@ -200,8 +203,10 @@ namespace nw {
             memset(&conf, 0, sizeof(conf));
             wifi_station_get_config_default(&conf);
 
-            char buf[2048];
-            snprintf_P(buf, sizeof(buf), PSTR(PAGE_CONTENT_CONFIG_WIFI_HTML),
+            constexpr size_t buf_size = 2048;
+            static_assert(sizeof(PAGE_CONTENT_CONFIG_WIFI_HTML) + 512 < buf_size, "Buffer too small");
+            char *buf = new char[buf_size];
+            snprintf_P(buf, buf_size, PSTR(PAGE_CONTENT_CONFIG_WIFI_HTML),
                 status_str,
                 config::global_config.ent_enabled ? "WPA2-Enterprise" : "WPA2-PSK",
                 conf.password,
@@ -210,20 +215,23 @@ namespace nw {
                 config::global_config.ent_password,
                 config::global_config.ent_ssid,
                 config::global_config.ent_username,
-                config::global_config.ent_password
-                );
+                config::global_config.ent_password);
 
             server.send(200, "text/html", buf);
+            delete[] buf;
         });
         server.on("/config-ap", HTTP_GET, [&server]() {
-            char buf[2048];
-            snprintf_P(buf, sizeof(buf), PSTR(PAGE_CONTENT_CONFIG_AP_HTML),
+            constexpr size_t buf_size = 1024;
+            static_assert(sizeof(PAGE_CONTENT_CONFIG_AP_HTML) + 256 < buf_size, "Buffer too small");
+            char *buf = new char[buf_size];
+            snprintf_P(buf, buf_size, PSTR(PAGE_CONTENT_CONFIG_AP_HTML),
                 config::global_config.ap_password,
                 config::global_config.ap_ssid,
                 config::global_config.ap_password
             );
 
             server.send(200, "text/html", buf);
+            delete[] buf;
         });
         // Config backend
         server.on("/wifi-connect", HTTP_POST, [&server]() {
