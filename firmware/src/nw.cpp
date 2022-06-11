@@ -163,8 +163,12 @@ namespace nw {
             else {
                 DEBUG_OUT_FP(PSTR("(WPA2-Enterprise) Connecting to SSID: %s, username: %s, password: %s\n"),
                     config::global_config.ent_ssid, config::global_config.ent_username, config::global_config.ent_password);
-                enterprise_connect(config::global_config.ent_ssid, config::global_config.ent_username,
-                    config::global_config.ent_username, config::global_config.ent_password);
+                // Band-aid fix
+                // Not enough memory to connect and then use firebase after this point (#1)
+                DEBUG_OUT_LN(F("Software reset to reconnect"));
+                ESP.restart();
+                // enterprise_connect(config::global_config.ent_ssid, config::global_config.ent_username,
+                //     config::global_config.ent_username, config::global_config.ent_password);
             }
             // Wait for connection while flashing
             int counter = 0;
