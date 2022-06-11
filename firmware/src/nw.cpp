@@ -70,8 +70,16 @@ namespace nw {
 
         connect_status = -2;
         if (use_saved) {
-
-            WiFi.begin();
+            
+            if (config::global_config.ent_enabled) {
+                DEBUG_OUT_LN(F("Connecting to saved WPA2-Enterprise"));
+                enterprise_connect(config::global_config.ent_ssid, config::global_config.ent_username,
+                    config::global_config.ent_username, config::global_config.ent_password);
+            }
+            else {
+                DEBUG_OUT_LN(F("Connecting to saved WPA2-PSK"));
+                WiFi.begin();
+            }
 
             int counter = 0;
             while ((connect_status = WiFi.status()) == WL_DISCONNECTED && counter * 2 < timeout) {
@@ -113,13 +121,22 @@ namespace nw {
             delay(2000);
             WiFi.softAPdisconnect(true);
 
-            DEBUG_OUT_LN(F("Connecting to SSID/Password:"));
-            DEBUG_OUT_LN(input_ssid);
-            DEBUG_OUT_LN(input_password);
-
-            // Try connecting
-            WiFi.persistent(true);
-            WiFi.begin(input_ssid, input_password);
+            // Try connecting here
+            if (!config::global_config.ent_enabled) {
+                DEBUG_OUT_FP(PSTR("(WPA2-PSK) Connecting to SSID: %s, password: %s\n"), 
+                    input_ssid.c_str(), input_password.c_str());
+                // Temporarily turn on persistent mode so the new SSID/password gets saved
+                WiFi.persistent(true);
+                WiFi.begin(input_ssid, input_password);
+                WiFi.persistent(false);
+            }
+            else {
+                DEBUG_OUT_FP(PSTR("(WPA2-Enterprise) Connecting to SSID: %s, username: %s, password: %s\n"),
+                    config::global_config.ent_ssid, config::global_config.ent_username, config::global_config.ent_password);
+                enterprise_connect(config::global_config.ent_ssid, config::global_config.ent_username,
+                    config::global_config.ent_username, config::global_config.ent_password);
+            }
+            // Wait for connection while flashing
             int counter = 0;
             while ((connect_status = WiFi.status()) == WL_DISCONNECTED && counter * 2 < timeout) {
                 delay(500);
@@ -129,7 +146,6 @@ namespace nw {
             if (connect_status != WL_CONNECTED) {
                 DEBUG_OUT_LN(F("Failed to connect!"));
             }
-            WiFi.persistent(false);
         }
         digitalWrite(STATUS_LED, 1);
     }

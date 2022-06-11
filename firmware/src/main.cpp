@@ -38,7 +38,7 @@ void setup() {
 
     nw::wifi_connect(digitalRead(D1));
 
-    DEBUG_OUT_LN(WiFi.localIP());
+    DEBUG_OUT_FP(PSTR("Local IP address: %s\n"), WiFi.localIP().toString().c_str());
 
     if(!fb::init()) {
         DEBUG_OUT_LN(F("Failed to connect to Firebase!"));
