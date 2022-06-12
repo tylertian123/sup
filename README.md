@@ -1,4 +1,4 @@
-# Sup (Sreela's Unnamed Project)
+# Sup
 
 Development in progress.
 
