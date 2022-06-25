@@ -90,4 +90,43 @@ namespace display {
         }
     };
 
+    template<uint8_t Width, uint8_t Height, uint8_t... Pins>
+    class Display {
+    public:
+        MAX7219<Width> rows[Height];
+        uint8_t disp_buf[Height * 8][Width];
+
+        constexpr uint16_t mod_width = Width, mod_height = Height;
+        constexpr uint16_t width = Width * 8, height = Height * 8;
+
+        Display() : rows{Pins...}, disp_buf{} {}
+
+        void init() {
+            for (uint8_t i = 0; i < Height; i ++) {
+                rows[i].init_io();
+                // Extra redundancy in init sequence
+                rows[i].init();
+                rows[i].init();
+                rows[i].init();
+                rows[i].clear();
+            }
+        }
+
+        void clear_buf() {
+            memset(disp_buf, 0, sizeof(disp_buf));
+        }
+
+        void update() {
+            for (int i = 0; i < Height; i ++) {
+                MAX7219<Width> &disp = rows[i];
+                for (int j = 0; j < 8; j ++) {
+                    uint8_t *row = disp_buf[i * 8 + j];
+                    for (int k = 0; k < Width; k ++) {
+                        disp.write_cmd(k, MAX7219<Width>::DIG0 + j, row[k]);
+                    }
+                    disp.update();
+                }
+            }
+        }
+    };
 }

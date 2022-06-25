@@ -3,9 +3,10 @@
 #include <Firebase_ESP_Client.h>
 #include <stdio.h>
 
-#include "nw.h"
 #include "common.h"
+#include "wiring.h"
 #include "config.h"
+#include "nw.h"
 #include "fb.h"
 
 /*
@@ -20,7 +21,7 @@
 bool init_success = false;
 
 void setup() {
-    pinMode(D1, INPUT_PULLUP);
+    pinMode(INPUT_BTN, INPUT_PULLUP);
     pinMode(STATUS_LED, OUTPUT);
     digitalWrite(STATUS_LED, 0);
 
