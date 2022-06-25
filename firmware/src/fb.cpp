@@ -1,5 +1,6 @@
 #include "fb.h"
 #include "common.h"
+#include "wiring.h"
 #include "secrets.h"
 #include "config.h"
 
@@ -14,6 +15,9 @@ namespace fb {
     FirebaseConfig config;
 
     bool init_success = true;
+    
+    bool disp_data_updated = false;
+    uint8_t disp_data[DISP_HEIGHT * 8][DISP_WIDTH];
 
     void token_status_cb(TokenInfo info) {
         if (info.status == token_status_error) {
@@ -40,17 +44,20 @@ namespace fb {
             DEBUG_OUT_FP(PSTR("Error: Got unexpected data type: %d (expecting %d)"), data.dataTypeEnum(), fb_esp_rtdb_data_type_blob);
             return;
         }
-        DEBUG_OUT_LN(F("Received data:"));
+
         auto *display_data = data.to<std::vector<uint8_t>*>();
-        int bit_count = 0;
+        uint16_t row = 0;
+        uint16_t col = 0;
         for (uint8_t b : *display_data) {
-            for (int i = 0; i < 8; i++, bit_count++) {
-                DEBUG_OUT(b & (1 << (7 - i)) ? "#" : " ");
-            }
-            if (bit_count % 32 == 0) {
-                DEBUG_OUT_LN("");
+            disp_data[row][col++] = b;
+            if (col % DISP_WIDTH == 0) {
+                col = 0;
+                row++;
             }
         }
+        // TODO: Verify data length
+        disp_data_updated = true;
+        DEBUG_OUT_LN(F("Got new data"));
     }
 
     bool init() {

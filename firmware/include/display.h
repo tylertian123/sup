@@ -96,8 +96,8 @@ namespace display {
         MAX7219<Width> rows[Height];
         uint8_t disp_buf[Height * 8][Width];
 
-        constexpr uint16_t mod_width = Width, mod_height = Height;
-        constexpr uint16_t width = Width * 8, height = Height * 8;
+        static constexpr uint16_t mod_width = Width, mod_height = Height;
+        static constexpr uint16_t width = Width * 8, height = Height * 8;
 
         Display() : rows{Pins...}, disp_buf{} {}
 

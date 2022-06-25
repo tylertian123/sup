@@ -2,9 +2,11 @@
 #include <ESP8266WiFi.h>
 #include <Firebase_ESP_Client.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "common.h"
 #include "wiring.h"
+#include "display.h"
 #include "config.h"
 #include "nw.h"
 #include "fb.h"
@@ -20,6 +22,8 @@
 
 bool init_success = false;
 
+display::Display<DISP_WIDTH, DISP_HEIGHT, DISP1_CS, DISP2_CS> disp;
+
 void setup() {
     pinMode(INPUT_BTN, INPUT_PULLUP);
     pinMode(STATUS_LED, OUTPUT);
@@ -27,6 +31,8 @@ void setup() {
 
     Serial.begin(115200);
     DEBUG_OUT_LN(F("Started"));
+
+    disp.init();
 
     config::init();
     if (!config::load_config()) {
@@ -60,6 +66,12 @@ void loop() {
     if (init_success) {
         if (Firebase.ready()) {
             // Nothing to do right now
+        }
+        if (fb::disp_data_updated) {
+            fb::disp_data_updated = false;
+            memcpy(disp.disp_buf, fb::disp_data, sizeof(disp.disp_buf));
+            disp.update();
+            DEBUG_OUT_LN(F("Display updated"));
         }
     }
 }
