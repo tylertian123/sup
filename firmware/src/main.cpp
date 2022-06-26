@@ -28,7 +28,7 @@ void setup() {
     DEBUG_OUT_LN(F("Started"));
 
     ui::init();
-    digitalWrite(STATUS, 0);
+    digitalWrite(STATUS_LED, 0);
 
     config::init();
     if (!config::load_config()) {
@@ -61,12 +61,6 @@ void loop() {
     if (init_success) {
         if (Firebase.ready()) {
             // Nothing to do right now
-        }
-        if (fb::disp_data_updated) {
-            fb::disp_data_updated = false;
-            memcpy(ui::disp.disp_buf, fb::disp_data, sizeof(ui::disp.disp_buf));
-            ui::disp.update();
-            DEBUG_OUT_LN(F("Display updated"));
         }
     }
     ui::poll();

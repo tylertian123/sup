@@ -113,14 +113,14 @@ namespace nw {
             int counter = 0;
             while ((connect_status = WiFi.status()) == WL_DISCONNECTED && counter * 2 < timeout) {
                 delay(500);
-                digitalWrite(STATUS, !digitalRead(STATUS));
+                digitalWrite(STATUS_LED, !digitalRead(STATUS_LED));
                 counter++;
             }
         }
 
         if (connect_status == WL_CONNECTED) {
             DEBUG_OUT_LN(F("Connected to saved network"));
-            digitalWrite(STATUS, 1);
+            digitalWrite(STATUS_LED, 1);
             return;
         }
         char status_str[64];
@@ -130,7 +130,7 @@ namespace nw {
 
         // In case of failure, run the access point + config server
         while (connect_status != WL_CONNECTED) {
-            digitalWrite(STATUS, 0);
+            digitalWrite(STATUS_LED, 0);
 
             // Enable access point
             init_ap();
@@ -175,14 +175,14 @@ namespace nw {
             int counter = 0;
             while ((connect_status = WiFi.status()) == WL_DISCONNECTED && counter * 2 < timeout) {
                 delay(500);
-                digitalWrite(STATUS, !digitalRead(STATUS));
+                digitalWrite(STATUS_LED, !digitalRead(STATUS_LED));
                 counter++;
             }
             if (connect_status != WL_CONNECTED) {
                 DEBUG_OUT_LN(F("Failed to connect!"));
             }
         }
-        digitalWrite(STATUS, 1);
+        digitalWrite(STATUS_LED, 1);
     }
 
     void init_ap() {

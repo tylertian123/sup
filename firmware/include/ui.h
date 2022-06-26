@@ -8,12 +8,12 @@ namespace ui {
     class Button {
     private:
         static constexpr unsigned int DEBOUNCE_DELAY = 10;
-        static constexpr unsigned int HOLD_DELAY = 1500;
+        static constexpr unsigned int HOLD_DELAY = 1000;
         const uint8_t pin;
         unsigned long last_change;
         // Whether the button has previously been held down
         // This is to prevent a "pressed" when the button is being released from being held down
-        bool hold_release = false;
+        bool in_hold = false;
 
     public:
         // Whether the button is currently down
