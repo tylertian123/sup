@@ -49,6 +49,7 @@ export default function Home() {
     const [loginUser, setLoginUser] = useState(null);
     const [configOk, setConfigOk] = useState(true);
     const [displayValues, setDisplayValues] = useState(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH));
+    const [displayUpdated, setDisplayUpdated] = useState(false);
     const writeTo = useRef(null);
     
     const [successMessage, setSuccessMessage] = useState(null);
@@ -108,6 +109,7 @@ export default function Home() {
             displayData: `blob,base64,${serializeDisplay(displayValues)}`
         }).then(() => {
             setSuccessMessage("Display updated!");
+            setDisplayUpdated(false);
         }).catch((err) => {
             setErrorMessage("Error: Cannot update display: " + err.toString());
         });
@@ -139,6 +141,7 @@ export default function Home() {
                         try {
                             setDisplayValues(deserializeDisplay(snapshot.val().slice("blob,base64,".length), 8 * DISPLAY_WIDTH));
                             setSuccessMessage("Loaded!");
+                            setDisplayUpdated(true);
                         }
                         catch (_e) {
                             setErrorMessage(`Error: Can't load display data because it's not in the expected format! (data: ${snapshot.val()})`)
@@ -182,10 +185,13 @@ export default function Home() {
                         <Form.Label>Click to toggle each pixel. Left-click and drag to draw; right-click and drag to erase.</Form.Label>
                     </Form.Group>
                     <Form.Group className="mb-3">
-                        <MultiDisplay values={displayValues} setValues={setDisplayValues}></MultiDisplay>
+                        <MultiDisplay values={displayValues} setValues={setDisplayValues} setUpdated={setDisplayUpdated}></MultiDisplay>
                     </Form.Group>
-                    <Button type="submit" disabled={!configOk}>Save</Button>
-                    <Button className="ms-2" variant="danger" disabled={!configOk} onClick={() => setDisplayValues(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH))}>Clear</Button>
+                    <Button type="submit" disabled={!configOk || !displayUpdated}>Save</Button>
+                    <Button className="ms-2" variant="danger" disabled={!configOk} onClick={() => {
+                        setDisplayValues(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH));
+                        setDisplayUpdated(true);
+                    }}>Clear</Button>
                     <Button className="ms-2" disabled={!configOk} onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}>Advanced Options</Button>
                 </Form>
                 <Collapse in={showAdvancedOptions}>

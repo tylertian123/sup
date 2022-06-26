@@ -32,7 +32,7 @@ export function packValues(values, innerRows = 8, innerCols = 8) {
                 ))));
 }
 
-export default function MultiDisplay({ values, setValues, drawOrClear = true, style = {} }) {
+export default function MultiDisplay({ values, setValues, drawOrClear = true, setUpdated = null, style = {} }) {
 
     const cols = values[0].length;
     
@@ -45,7 +45,7 @@ export default function MultiDisplay({ values, setValues, drawOrClear = true, st
     const displays = values.map(
         (displayRow, i) => displayRow.map(
             (display, j) =>
-                <Display key={[i, j]} drawOrClear={drawOrClear} values={display} setValues={setSubValues.bind(null, i, j)}/>
+                <Display key={[i, j]} drawOrClear={drawOrClear} values={display} setValues={setSubValues.bind(null, i, j)} setUpdated={setUpdated}/>
         )
     );
     

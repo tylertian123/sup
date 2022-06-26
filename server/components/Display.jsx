@@ -1,7 +1,7 @@
 import styles from './Display.module.css'
 import { useEffect, useRef } from 'react';
 
-export default function Display({ values, setValues, drawOrClear = true, style = {} }) {
+export default function Display({ values, setValues, drawOrClear = true, setUpdated = null, style = {} }) {
     const cols = values[0].length;
     const leftDown = useRef(false);
     const rightDown = useRef(false);
@@ -35,6 +35,9 @@ export default function Display({ values, setValues, drawOrClear = true, style =
         const copy = values.map((e) => [...e]);
         copy[i][j] = event.currentTarget.checked;
         setValues(copy);
+        if (setUpdated) {
+            setUpdated(true);
+        }
     }
     const leds = values.map(
         (row, i) => row.map(
