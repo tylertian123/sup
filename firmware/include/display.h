@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <Arduino.h>
+#include <SPI.h>
 
 namespace display {
 
@@ -34,6 +35,7 @@ namespace display {
 
         MAX7219(uint8_t CS) : CS(CS) {}
 
+        // Initialize pin modes and SPI
         void init_io() {
             // 10MHz, MSB first, output on rising edge
             SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE1));
@@ -43,6 +45,7 @@ namespace display {
             digitalWrite(CS, 0);
         }
 
+        // Configure all displays
         void init() {
             // Turn off display test mode
             fill_cmd(DISP_TEST, 0);
@@ -61,21 +64,25 @@ namespace display {
             update();
         }
 
+        // Write a command for a specific module into the buffer. Does NOT update the display.
         void write_cmd(uint8_t disp, uint8_t addr, uint8_t data) {
             // Flip for low-endian system
             cmd_buf[disp] = (data << 8) | addr;
         }
         
+        // Write the same command for all modules in the buffer. Does NOT update the display.
         void fill_cmd(uint8_t addr, uint8_t data) {
             for (uint8_t i = 0; i < Size; i ++) {
                 write_cmd(i, addr, data);
             }
         }
 
+        // Clear the command buffer (set to all NOPs). Does NOT update the display.
         void clear_cmd() {
             memset(cmd_buf, 0, sizeof(cmd_buf));
         }
 
+        // Clear the display.
         void clear() {
             for (uint8_t i = 0; i < 8; i ++) {
                 fill_cmd(DIG0 + i, 0);
@@ -83,6 +90,7 @@ namespace display {
             }
         }
 
+        // Send the contents of the command buffer to the displays.
         void update() {
             digitalWrite(CS, 0);
             SPI.writeBytes(reinterpret_cast<uint8_t *>(cmd_buf), sizeof(cmd_buf));
@@ -101,6 +109,7 @@ namespace display {
 
         Display() : rows{Pins...}, disp_buf{} {}
 
+        // Initialize I/O, turn on and clear all displays.
         void init() {
             for (uint8_t i = 0; i < Height; i ++) {
                 rows[i].init_io();
@@ -112,10 +121,12 @@ namespace display {
             }
         }
 
+        // Clear the display buffer. Does NOT update the display.
         void clear_buf() {
             memset(disp_buf, 0, sizeof(disp_buf));
         }
 
+        // Update the display to what the display buffer contains.
         void update() {
             for (int i = 0; i < Height; i ++) {
                 MAX7219<Width> &disp = rows[i];
@@ -126,6 +137,14 @@ namespace display {
                     }
                     disp.update();
                 }
+            }
+        }
+
+        // Write a command to all the display modules.
+        void write_all(uint8_t addr, uint8_t data) {
+            for (int i = 0; i < Height; i ++) {
+                rows[i].fill_cmd(addr, data);
+                rows[i].update();
             }
         }
     };

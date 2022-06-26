@@ -6,6 +6,7 @@
 
 #include "common.h"
 #include "wiring.h"
+#include "ui.h"
 #include "display.h"
 #include "config.h"
 #include "nw.h"
@@ -22,28 +23,22 @@
 
 bool init_success = false;
 
-display::Display<DISP_WIDTH, DISP_HEIGHT, DISP1_CS, DISP2_CS> disp;
-
 void setup() {
-    pinMode(INPUT_BTN, INPUT_PULLUP);
-    pinMode(STATUS_LED, OUTPUT);
-    digitalWrite(STATUS_LED, 0);
-
     Serial.begin(115200);
     DEBUG_OUT_LN(F("Started"));
 
-    disp.init();
+    ui::init();
+    digitalWrite(STATUS, 0);
 
     config::init();
     if (!config::load_config()) {
         DEBUG_OUT_LN(F("Failed to load config object, using default values"));
     }
 
-    if (!digitalRead(D1)) {
+    if (ui::input1.down) {
         DEBUG_OUT_LN(F("Forcing AP mode"));
     }
-
-    nw::wifi_connect(digitalRead(D1));
+    nw::wifi_connect(!ui::input1.down);
 
     DEBUG_OUT_FP(PSTR("Local IP address: %s\n"), WiFi.localIP().toString().c_str());
 
@@ -69,9 +64,10 @@ void loop() {
         }
         if (fb::disp_data_updated) {
             fb::disp_data_updated = false;
-            memcpy(disp.disp_buf, fb::disp_data, sizeof(disp.disp_buf));
-            disp.update();
+            memcpy(ui::disp.disp_buf, fb::disp_data, sizeof(ui::disp.disp_buf));
+            ui::disp.update();
             DEBUG_OUT_LN(F("Display updated"));
         }
     }
+    ui::poll();
 }

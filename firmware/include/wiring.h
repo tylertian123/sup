@@ -2,8 +2,9 @@
 
 #include <Arduino.h>
 
-#define STATUS_LED D0
-#define INPUT_BTN D1
+#define STATUS D0
+#define INPUT1 D1
+#define INPUT2 D6
 #define DISP1_CS D2
 #define DISP2_CS D3
 
