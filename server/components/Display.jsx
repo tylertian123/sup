@@ -43,15 +43,18 @@ export default function Display({ values, setValues, drawOrClear = true, style =
                     onContextMenu={(event) => {
                         event.currentTarget.checked = !event.currentTarget.checked;
                         event.preventDefault();
+                        onChange(i, j, event);
                         return false;
                     }}
                     onChange={onChange.bind(null, i, j)}
                     onMouseMove={(event) => {
                         if (leftDown.current) {
                             event.currentTarget.checked = drawOrClear;
+                            onChange(i, j, event);
                         }
                         if (rightDown.current) {
                             event.currentTarget.checked = !drawOrClear;
+                            onChange(i, j, event);
                         }
                     }} />
         )
