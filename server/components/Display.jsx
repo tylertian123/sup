@@ -3,13 +3,24 @@ import { useEffect, useRef } from 'react';
 
 export default function Display({ values, setValues, drawOrClear = true, style = {} }) {
     const cols = values[0].length;
-    const mouseDown = useRef(false);
+    const leftDown = useRef(false);
+    const rightDown = useRef(false);
 
-    function mouseDownListener() {
-        mouseDown.current = true;
+    function mouseDownListener(event) {
+        if (event.button === 0) {
+            leftDown.current = true;
+        }
+        else if (event.button === 2) {
+            rightDown.current = true;
+        }
     }
-    function mouseUpListener() {
-        mouseDown.current = false;
+    function mouseUpListener(event) {
+        if (event.button === 0) {
+            leftDown.current = false;
+        }
+        else if (event.button === 2) {
+            rightDown.current = false;
+        }
     }
     useEffect(() => {
         document.addEventListener("mousedown", mouseDownListener);
@@ -28,12 +39,19 @@ export default function Display({ values, setValues, drawOrClear = true, style =
     const leds = values.map(
         (row, i) => row.map(
             (state, j) =>
-                <input key={[i, j]} type="checkbox" className={styles.led} checked={state} 
+                <input key={[i, j]} type="checkbox" className={styles.led} checked={state}
+                    onContextMenu={(event) => {
+                        event.currentTarget.checked = !event.currentTarget.checked;
+                        event.preventDefault();
+                        return false;
+                    }}
                     onChange={onChange.bind(null, i, j)}
                     onMouseMove={(event) => {
-                        if (mouseDown.current) {
+                        if (leftDown.current) {
                             event.currentTarget.checked = drawOrClear;
-                            onChange(i, j, event);
+                        }
+                        if (rightDown.current) {
+                            event.currentTarget.checked = !drawOrClear;
                         }
                     }} />
         )
@@ -42,7 +60,10 @@ export default function Display({ values, setValues, drawOrClear = true, style =
     return <div style={{
         ...style,
         gridTemplateColumns: `repeat(${cols}, 1fr)`
-    }} className={styles.matrix}>
+    }} className={styles.matrix} onContextMenu={(e) => {
+        e.preventDefault();
+        return false;
+    }}>
         {leds}
     </div>;
 }
