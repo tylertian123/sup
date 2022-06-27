@@ -63,13 +63,15 @@ namespace ui {
             disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 1);
         }
 
+        // Increase brightness
         if (input1.pressed) {
             input1.pressed = false;
-            if (disp_brightness < 31) {
+            if (disp_brightness < 15) {
                 disp_brightness ++;
             }
             disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, disp_brightness);
         }
+        // Decrease brightness
         if (input2.pressed) {
             input2.pressed = false;
             if (disp_brightness > 0) {
@@ -77,6 +79,19 @@ namespace ui {
             }
             disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, disp_brightness);
         }
+        // Re-init the displays
+        if (input1.held) {
+            input1.held = false;
+            for (uint8_t i = 0; i < disp.mod_height; i ++) {
+                disp.rows[i].init();
+                disp.rows[i].init();
+                disp.rows[i].init();
+                disp.rows[i].clear();
+            }
+            disp.update();
+            disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, disp_brightness);
+        }
+        // Sleep mode
         if (input2.held) {
             input2.held = false;
             sleep = true;
