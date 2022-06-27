@@ -9,6 +9,7 @@ import Layout from '../components/Layout';
 import MultiDisplay, { createDefaultValues, packValues, unpackValues } from '../components/MultiDisplay'
 import CollapsedAlert from '../components/CollapsedAlert';
 import TooltipButton from '../components/TooltipButton';
+import * as Icons from 'react-bootstrap-icons';
 
 const DISPLAY_WIDTH = 4;
 const DISPLAY_HEIGHT = 2;
@@ -193,8 +194,8 @@ export default function Home() {
                     <TooltipButton className="ms-2" variant="danger" tooltip="Clear the editor contents." disabled={!configOk} onClick={() => {
                         setDisplayValues(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH));
                         setDisplayUpdated(true);
-                    }}>Clear</TooltipButton>
-                    <TooltipButton className="ms-2" disabled={!configOk} tooltip="Show/hide advanced options." onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}>Advanced Options</TooltipButton>
+                    }}><Icons.XLg/></TooltipButton>
+                    <TooltipButton className="ms-2" disabled={!configOk} tooltip="Show/hide advanced options." onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}><Icons.ThreeDots/></TooltipButton>
                 </Form>
                 <Collapse in={showAdvancedOptions}>
                     <div className="rounded border border-secondary p-2">
