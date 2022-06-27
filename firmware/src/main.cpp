@@ -59,9 +59,9 @@ void setup() {
 
 void loop() {
     if (init_success) {
-        if (Firebase.ready()) {
-            // Nothing to do right now
-        }
+        // Make Firebase do its auth thing
+        // Data comes from a stream callback so no need to check this result here
+        Firebase.ready();
     }
-    ui::poll();
+    ui::poll(init_success);
 }

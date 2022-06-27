@@ -56,7 +56,7 @@ namespace ui {
         pinMode(STATUS_LED, OUTPUT);
     }
 
-    void poll() {
+    void poll(bool init_success) {
         input1.poll();
         input2.poll();
 
@@ -99,22 +99,24 @@ namespace ui {
             disp.update();
             disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, disp_brightness);
         }
-        // Sleep mode
-        if (input2.held && !input1.down) {
-            input2.held = false;
-            sleep = true;
-            disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 0);
-        }
-        // Check for data updates
-        if (fb::disp_data_updated) {
-            fb::disp_data_updated = false;
-            memcpy(disp.disp_buf, fb::disp_data, sizeof(disp.disp_buf));
-            disp.update();
-            DEBUG_OUT_LN(F("Display updated"));
-            // Automatically exit sleep mode after display update
-            if (sleep) {
-                sleep = false;
-                disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 1);
+        if (init_success) {
+            // Sleep mode
+            if (input2.held && !input1.down) {
+                input2.held = false;
+                sleep = true;
+                disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 0);
+            }
+            // Check for data updates
+            if (fb::disp_data_updated) {
+                fb::disp_data_updated = false;
+                memcpy(disp.disp_buf, fb::disp_data, sizeof(disp.disp_buf));
+                disp.update();
+                DEBUG_OUT_LN(F("Display updated"));
+                // Automatically exit sleep mode after display update
+                if (sleep) {
+                    sleep = false;
+                    disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 1);
+                }
             }
         }
     }

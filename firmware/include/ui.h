@@ -34,5 +34,5 @@ namespace ui {
     extern Button input1, input2;
 
     void init();
-    void poll();
+    void poll(bool init_success);
 }
