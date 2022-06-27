@@ -3,10 +3,10 @@ import 'firebase/compat/database';
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Button, ButtonGroup, Collapse, Container, Form, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
+import { Alert, Collapse, Container, Form } from 'react-bootstrap';
 
 import Layout from '../components/Layout';
-import MultiDisplay, { createDefaultValues, packValues, unpackValues } from '../components/MultiDisplay'
+import MultiDisplay, { createDefaultValues, packValues, unpackValues } from '../components/MultiDisplay';
 import CollapsedAlert from '../components/CollapsedAlert';
 import TooltipButton from '../components/TooltipButton';
 import * as Icons from 'react-bootstrap-icons';
@@ -16,7 +16,9 @@ const DISPLAY_HEIGHT = 2;
 
 const db = firebase.database();
 try {
-    db.useEmulator('localhost', 9000);
+    if (process.env.NODE_ENV === "development") {
+        db.useEmulator('localhost', 9000);
+    }
 } catch (e) {}
 
 function serializeDisplay(values) {

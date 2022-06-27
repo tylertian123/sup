@@ -10,7 +10,9 @@ import CollapsedAlert from '../components/CollapsedAlert';
 
 const db = firebase.database();
 try {
-    db.useEmulator('localhost', 9000);
+    if (process.env.NODE_ENV === "development") {
+        db.useEmulator('localhost', 9000);
+    }
 } catch (e) {}
 
 export default function Config() {
