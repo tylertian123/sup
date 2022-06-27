@@ -69,28 +69,33 @@ export default function Home() {
         }), []
     );
 
+    function loadDisplayData() {
+        db.ref(`/users/${loginUser.uid}/writeTo`).get().then((snapshot) => {
+            if (!snapshot.exists()) {
+                setConfigOk(false);
+            }
+            else {
+                writeTo.current = snapshot.val();
+                // If we have a location to read the display data from, then load the current display data
+                db.ref(`/data/${writeTo.current}/displayData`).get().then((snapshot) => {
+                    if (snapshot.exists()) {
+                        try {
+                            setDisplayValues(deserializeDisplay(snapshot.val().slice("blob,base64,".length), 8 * DISPLAY_WIDTH));
+                            setDisplayUpdated(false);
+                        }
+                        catch (_e) {
+                            setErrorMessage(`Error: Can't get current display data because it's not in the expected format! (current data: ${snapshot.val()})`)
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     // When user is loaded, try to find where to write the data and show the alert if it's not configured
     useEffect(() => {
         if (loginUser) {
-            db.ref(`/users/${loginUser.uid}/writeTo`).get().then((snapshot) => {
-                if (!snapshot.exists()) {
-                    setConfigOk(false);
-                }
-                else {
-                    writeTo.current = snapshot.val();
-                    // If we have a location to read the display data from, then load the current display data
-                    db.ref(`/data/${writeTo.current}/displayData`).get().then((snapshot) => {
-                        if (snapshot.exists()) {
-                            try {
-                                setDisplayValues(deserializeDisplay(snapshot.val().slice("blob,base64,".length), 8 * DISPLAY_WIDTH));
-                            }
-                            catch (_e) {
-                                setErrorMessage(`Error: Can't get current display data because it's not in the expected format! (current data: ${snapshot.val()})`)
-                            }
-                        }
-                    });
-                }
-            });
+            loadDisplayData();
         }
     }, [loginUser]);
 
@@ -195,6 +200,7 @@ export default function Home() {
                         setDisplayValues(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH));
                         setDisplayUpdated(true);
                     }}><Icons.XLg/></TooltipButton>
+                    <TooltipButton className="ms-2" variant="danger" tooltip="Reload the saved display data and replace the current editor contents." onClick={loadDisplayData}><Icons.ArrowClockwise/></TooltipButton>
                     <TooltipButton className="ms-2" disabled={!configOk} tooltip="Show/hide advanced options." onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}><Icons.ThreeDots/></TooltipButton>
                 </Form>
                 <Collapse in={showAdvancedOptions}>
