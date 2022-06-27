@@ -22,6 +22,7 @@ namespace ui {
         bool pressed = false;
         // Set to true once after the button has been held down (but before release); needs to be cleared
         bool held = false;
+        unsigned long held_duration = 0;
 
         Button(uint8_t pin) : pin(pin) {}
         void init();

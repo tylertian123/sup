@@ -23,6 +23,9 @@ namespace ui {
             held = true;
             in_hold = true;
         }
+        if (in_hold) {
+            held_duration = t - last_change;
+        }
         // Check for a state change with debounce
         if (state != down && t - last_change > DEBOUNCE_DELAY) {
             // Check for button being released
@@ -32,6 +35,7 @@ namespace ui {
                     pressed = true;
                 }
                 in_hold = false;
+                held_duration = 0;
             }
             down = state;
             last_change = t;
@@ -57,8 +61,8 @@ namespace ui {
         input2.poll();
 
         // Exit sleep mode on any input
-        if (sleep && (input1.pressed || input2.pressed || input1.held || input2.held)) {
-            input1.pressed = input2.pressed = input1.held = input2.held = false;
+        if (sleep && (input1.pressed || input2.pressed)) {
+            input1.pressed = input2.pressed = false;
             sleep = false;
             disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 1);
         }
@@ -79,8 +83,12 @@ namespace ui {
             }
             disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, disp_brightness);
         }
+        // Holding down both buttons for 3s does a soft reset
+        if (input1.held && input2.held && input1.held_duration > 3000 && input2.held_duration > 3000) {
+            ESP.restart();
+        }
         // Re-init the displays
-        if (input1.held) {
+        if (input1.held && !input2.down) {
             input1.held = false;
             for (uint8_t i = 0; i < disp.mod_height; i ++) {
                 disp.rows[i].init();
@@ -92,12 +100,11 @@ namespace ui {
             disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, disp_brightness);
         }
         // Sleep mode
-        if (input2.held) {
+        if (input2.held && !input1.down) {
             input2.held = false;
             sleep = true;
             disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 0);
         }
-
         // Check for data updates
         if (fb::disp_data_updated) {
             fb::disp_data_updated = false;
