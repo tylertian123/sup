@@ -8,6 +8,7 @@ import { Alert, Button, ButtonGroup, Collapse, Container, Form, ToggleButton, To
 import Layout from '../components/Layout';
 import MultiDisplay, { createDefaultValues, packValues, unpackValues } from '../components/MultiDisplay'
 import CollapsedAlert from '../components/CollapsedAlert';
+import TooltipButton from '../components/TooltipButton';
 
 const DISPLAY_WIDTH = 4;
 const DISPLAY_HEIGHT = 2;
@@ -45,6 +46,7 @@ function deserializeDisplay(b64Data, width) {
     .reduce((rows, key, i) => (i % width == 0 ? rows.push([key]) : (rows[rows.length - 1].push(key)), rows), []));
 }
 
+// TODO: Add a button to reload
 export default function Home() {
     const [loginUser, setLoginUser] = useState(null);
     const [configOk, setConfigOk] = useState(true);
@@ -187,12 +189,12 @@ export default function Home() {
                     <Form.Group className="mb-3">
                         <MultiDisplay values={displayValues} setValues={setDisplayValues} setUpdated={setDisplayUpdated}></MultiDisplay>
                     </Form.Group>
-                    <Button type="submit" disabled={!configOk || !displayUpdated}>Save</Button>
-                    <Button className="ms-2" variant="danger" disabled={!configOk} onClick={() => {
+                    <TooltipButton type="submit" tooltip="Save these changes and update the physical display." disabled={!configOk || !displayUpdated}>Update</TooltipButton>
+                    <TooltipButton className="ms-2" variant="danger" tooltip="Clear the editor contents." disabled={!configOk} onClick={() => {
                         setDisplayValues(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH));
                         setDisplayUpdated(true);
-                    }}>Clear</Button>
-                    <Button className="ms-2" disabled={!configOk} onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}>Advanced Options</Button>
+                    }}>Clear</TooltipButton>
+                    <TooltipButton className="ms-2" disabled={!configOk} tooltip="Show/hide advanced options." onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}>Advanced Options</TooltipButton>
                 </Form>
                 <Collapse in={showAdvancedOptions}>
                     <div className="rounded border border-secondary p-2">
@@ -203,9 +205,9 @@ export default function Home() {
                                 <Form.Control.Feedback type="invalid">Location must be alphanumeric and can't be empty.</Form.Control.Feedback>
                                 <Form.Text className="text-muted">Save the current display data to or load the display data from another location.</Form.Text>
                             </Form.Group>
-                            <Button type="submit" name="save" onClick={() => advancedMode.current = "save"}>Save</Button>
-                            <Button type="submit" name="load" className="mx-2" onClick={() => advancedMode.current = "load"}>Load</Button>
-                            <Button type="submit" name="delete" variant="danger" onClick={() => advancedMode.current = "delete"}>Delete</Button>
+                            <TooltipButton type="submit" name="save" tooltip="Save to this location." onClick={() => advancedMode.current = "save"}>Save</TooltipButton>
+                            <TooltipButton type="submit" name="load" tooltip="Load from this location into the current editor." className="mx-2" onClick={() => advancedMode.current = "load"}>Load</TooltipButton>
+                            <TooltipButton type="submit" name="delete" tooltip="Delete the data at this location. This cannot be undone!" variant="danger" onClick={() => advancedMode.current = "delete"}>Delete</TooltipButton>
                         </Form>
                     </div>
                 </Collapse>
