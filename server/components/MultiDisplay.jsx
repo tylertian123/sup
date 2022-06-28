@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import Display from './Display';
 import styles from './MultiDisplay.module.css'
 
@@ -32,7 +31,7 @@ export function packValues(values, innerRows = 8, innerCols = 8) {
                 ))));
 }
 
-export default function MultiDisplay({ values, setValues, drawOrClear = true, setUpdated = null, style = {} }) {
+export default function MultiDisplay({ values, setValues, drawOrClear = true, setUpdated = null, disabled = false, style = {} }) {
 
     const cols = values[0].length;
     
@@ -45,7 +44,7 @@ export default function MultiDisplay({ values, setValues, drawOrClear = true, se
     const displays = values.map(
         (displayRow, i) => displayRow.map(
             (display, j) =>
-                <Display key={[i, j]} drawOrClear={drawOrClear} values={display} setValues={setSubValues.bind(null, i, j)} setUpdated={setUpdated}/>
+                <Display key={[i, j]} drawOrClear={drawOrClear} values={display} setValues={setSubValues.bind(null, i, j)} setUpdated={setUpdated} disabled={disabled}/>
         )
     );
     

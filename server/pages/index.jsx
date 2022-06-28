@@ -195,14 +195,14 @@ export default function Home() {
                         <Form.Label>Click to toggle each pixel. Left-click and drag to draw; right-click and drag to erase.</Form.Label>
                     </Form.Group>
                     <Form.Group className="mb-3">
-                        <MultiDisplay values={displayValues} setValues={setDisplayValues} setUpdated={setDisplayUpdated}></MultiDisplay>
+                        <MultiDisplay values={displayValues} setValues={setDisplayValues} setUpdated={setDisplayUpdated} disabled={!configOk}></MultiDisplay>
                     </Form.Group>
                     <TooltipButton type="submit" tooltip="Save these changes and update the physical display." disabled={!configOk || !displayUpdated}>Update</TooltipButton>
                     <TooltipButton className="ms-2" variant="danger" tooltip="Clear the editor contents." disabled={!configOk} onClick={() => {
                         setDisplayValues(createDefaultValues(DISPLAY_HEIGHT, DISPLAY_WIDTH));
                         setDisplayUpdated(true);
                     }}><Icons.XLg/></TooltipButton>
-                    <TooltipButton className="ms-2" variant="danger" tooltip="Reload the saved display data and replace the current editor contents." onClick={loadDisplayData}><Icons.ArrowClockwise/></TooltipButton>
+                    <TooltipButton className="ms-2" variant="danger" tooltip="Reload the saved display data and replace the current editor contents." disabled={!configOk} onClick={loadDisplayData}><Icons.ArrowClockwise/></TooltipButton>
                     <TooltipButton className="ms-2" disabled={!configOk} tooltip="Show/hide advanced options." onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}><Icons.ThreeDots/></TooltipButton>
                 </Form>
                 <Collapse in={showAdvancedOptions}>

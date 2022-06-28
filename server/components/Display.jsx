@@ -1,7 +1,7 @@
 import styles from './Display.module.css'
 import { useEffect, useRef } from 'react';
 
-export default function Display({ values, setValues, drawOrClear = true, setUpdated = null, style = {} }) {
+export default function Display({ values, setValues, drawOrClear = true, setUpdated = null, disabled = false, style = {} }) {
     const cols = values[0].length;
     const leftDown = useRef(false);
     const rightDown = useRef(false);
@@ -42,7 +42,7 @@ export default function Display({ values, setValues, drawOrClear = true, setUpda
     const leds = values.map(
         (row, i) => row.map(
             (state, j) =>
-                <input key={[i, j]} type="checkbox" className={styles.led} checked={state}
+                <input key={[i, j]} type="checkbox" className={styles.led} checked={state} disabled={disabled}
                     onContextMenu={(event) => {
                         event.currentTarget.checked = !event.currentTarget.checked;
                         event.preventDefault();
