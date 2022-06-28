@@ -3,12 +3,12 @@ import 'firebase/compat/database';
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Collapse, Container, Form } from 'react-bootstrap';
+import { Alert, Collapse, Container, Form, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
 
 import Layout from '../components/Layout';
 import MultiDisplay, { createDefaultValues, packValues, unpackValues } from '../components/MultiDisplay';
 import CollapsedAlert from '../components/CollapsedAlert';
-import TooltipButton from '../components/TooltipButton';
+import TooltipWrapper, { TooltipButton } from '../components/TooltipWrapper';
 import * as Icons from 'react-bootstrap-icons';
 
 const DISPLAY_WIDTH = 4;
@@ -63,6 +63,7 @@ export default function Home() {
     const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
     const [validated, setValidated] = useState(false);
     const advancedMode = useRef(null);
+    const advancedSavePrivate = useRef(true);
 
     // Make sure the page is updated when auth state is changed, since the auth user starts out null
     useEffect(() =>
@@ -136,8 +137,10 @@ export default function Home() {
             }
             const data = new FormData(form);
             const location = data.get("dataLocation");
+            // Choose data path based on private/public save
+            const path = advancedSavePrivate.current ? `/users/${loginUser.uid}/savedData/${location}` : `/data/${location}`; 
             if (advancedMode.current === "save") {
-                db.ref(`/data/${location}`).update({
+                db.ref(path).update({
                     displayData: `blob,base64,${serializeDisplay(displayValues)}`
                 }).then(() => {
                     setSuccessMessage("Saved!");
@@ -146,7 +149,7 @@ export default function Home() {
                 });
             }
             else if (advancedMode.current === "load") {
-                db.ref(`/data/${location}/displayData`).get().then((snapshot) => {
+                db.ref(`${path}/displayData`).get().then((snapshot) => {
                     if (snapshot.exists()) {
                         try {
                             setDisplayValues(deserializeDisplay(snapshot.val().slice("blob,base64,".length), 8 * DISPLAY_WIDTH));
@@ -163,7 +166,7 @@ export default function Home() {
                 });
             }
             else if (advancedMode.current === "delete") {
-                db.ref(`/data/${location}`).remove()
+                db.ref(path).remove()
                 .then(() => {
                     setSuccessMessage("Deleted!");
                 }).catch((err) => {
@@ -209,11 +212,17 @@ export default function Home() {
                     <div className="rounded border border-secondary p-2">
                         <Form noValidate validated={validated} onSubmit={handleAdvancedSubmit}>
                             <Form.Group className="mb-2">
-                                <Form.Label>Save to/Load from</Form.Label>
+                                <Form.Label>Save to/Load from another location</Form.Label>
                                 <Form.Control name="dataLocation" required type="text" pattern="[a-zA-Z0-9-]+" className="w-50 bg-white"/>
                                 <Form.Control.Feedback type="invalid">Location must be alphanumeric and can't be empty.</Form.Control.Feedback>
                                 <Form.Text className="text-muted">Save the current display data to or load the display data from another location.</Form.Text>
                             </Form.Group>
+                            <TooltipWrapper tooltip="Whether the data can be accessed by only you or everyone.">
+                                <ToggleButtonGroup name="save-type-radio" type="radio" defaultValue={true} className="me-2" onChange={(value) => advancedSavePrivate.current = value}>
+                                    <ToggleButton value={true} id="save-type-radio-1" variant="outline-secondary">Private</ToggleButton>
+                                    <ToggleButton value={false} id="save-type-radio-2" variant="outline-secondary">Public</ToggleButton>
+                                </ToggleButtonGroup>
+                            </TooltipWrapper>
                             <TooltipButton type="submit" name="save" tooltip="Save to this location." onClick={() => advancedMode.current = "save"}>Save</TooltipButton>
                             <TooltipButton type="submit" name="load" tooltip="Load from this location into the current editor." className="mx-2" onClick={() => advancedMode.current = "load"}>Load</TooltipButton>
                             <TooltipButton type="submit" name="delete" tooltip="Delete the data at this location. This cannot be undone!" variant="danger" onClick={() => advancedMode.current = "delete"}>Delete</TooltipButton>

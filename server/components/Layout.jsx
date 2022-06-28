@@ -13,6 +13,13 @@ import styles from './Layout.module.css'
 const firebaseConfig = require('../pages/firebase-config.json').result.sdkConfig;
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 
+let devEnv = false;
+try {
+    if (process.env.NODE_ENV === "development") {
+        devEnv = true;
+    }
+} catch (e) {}
+
 export default function Layout({ children, title = "Sup", requireSignIn = true }) {
     const [loginUser, setLoginUser] = useState(null);
 
@@ -36,7 +43,7 @@ export default function Layout({ children, title = "Sup", requireSignIn = true }
     return (
         <>
             <Head>
-                <title>{title}</title>
+                <title>{title} {devEnv ? "(dev build)" : null}</title>
             </Head>
             <Navbar bg="dark" variant="dark" className="mb-3">
                 <Container>
