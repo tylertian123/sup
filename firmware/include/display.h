@@ -5,8 +5,10 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <pgmspace.h>
+#include <algorithm>
 
 #include "font.h"
+#include "common.h"
 
 namespace display {
 
@@ -160,22 +162,45 @@ namespace display {
             }
         }
 
-        void draw_glyph(const font::Glyph &progmem_glyph, uint8_t x, uint8_t y) {
+        void draw_glyph_P(const font::Glyph &progmem_glyph, int16_t x, int16_t y) {
             // Copy the glyph and its data into RAM from PROGMEM so it can be accessed
             font::Glyph glyph(nullptr, 0, 0);
             uint8_t data[256];
             memcpy_P(&glyph, &progmem_glyph, sizeof(font::Glyph));
             memcpy_P(data, glyph.data, glyph.width_bytes * glyph.height);
-            for (uint8_t row = 0; row < glyph.height; row ++) {
-                const uint8_t *row_data = data + row * glyph.width_bytes;
-                for (uint8_t col = 0; col < glyph.width; col ++) {
-                    if (x + col >= width) {
-                        break;
-                    }
-                    set_pixel(x + col, y + row, row_data[col / 8] & (0x80 >> col % 8));
+            draw_glyph(glyph, x, y, data);
+        }
+
+        void draw_glyph(const font::Glyph &glyph, int16_t x, int16_t y, const uint8_t *data = nullptr) {
+            if (!data) {
+                data = glyph.data;
+            }
+            for (uint8_t row = std::max<int16_t>(y, 0); row < std::min<int16_t>(y + glyph.height, height); row ++) {
+                const uint8_t *row_data = data + (row - y) * glyph.width_bytes;
+                for (uint8_t col = std::max<int16_t>(x, 0); col < std::min<int16_t>(x + glyph.width, width); col ++) {
+                    set_pixel(col, row, row_data[(col - x) / 8] & (0x80 >> (col - x) % 8));
                 }
-                if (y + row >= height) {
-                    break;
+            }
+        }
+
+        void draw_string(const char *str, int16_t x, int16_t y) {
+            if (y > height) {
+                return;
+            }
+            for (; *str; str ++) {
+                font::Glyph glyph(nullptr, 0, 0);
+                memcpy_P(&glyph, &font::map(*str), sizeof(font::Glyph));
+                if (x + glyph.width < 0 || y + glyph.height < 0) {
+                    x += glyph.width + 1;
+                    continue;
+                }
+                uint8_t data[256];
+                memcpy_P(data, glyph.data, glyph.width_bytes * glyph.height);
+
+                draw_glyph(glyph, x, y, data);
+                x += glyph.width + 1;
+                if (x >= width) {
+                    return;
                 }
             }
         }
