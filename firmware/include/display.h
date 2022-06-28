@@ -4,6 +4,9 @@
 #include <string.h>
 #include <Arduino.h>
 #include <SPI.h>
+#include <pgmspace.h>
+
+#include "font.h"
 
 namespace display {
 
@@ -145,6 +148,35 @@ namespace display {
             for (int i = 0; i < Height; i ++) {
                 rows[i].fill_cmd(addr, data);
                 rows[i].update();
+            }
+        }
+
+        void set_pixel(uint8_t x, uint8_t y, bool state) {
+            if (state) {
+                disp_buf[y][x / 8] |= 0x80 >> (x % 8);
+            }
+            else {
+                disp_buf[y][x / 8] &= 0xFF - (0x80 >> (x % 8));
+            }
+        }
+
+        void draw_glyph(const font::Glyph &progmem_glyph, uint8_t x, uint8_t y) {
+            // Copy the glyph and its data into RAM from PROGMEM so it can be accessed
+            font::Glyph glyph(nullptr, 0, 0);
+            uint8_t data[256];
+            memcpy_P(&glyph, &progmem_glyph, sizeof(font::Glyph));
+            memcpy_P(data, glyph.data, glyph.width_bytes * glyph.height);
+            for (uint8_t row = 0; row < glyph.height; row ++) {
+                const uint8_t *row_data = data + row * glyph.width_bytes;
+                for (uint8_t col = 0; col < glyph.width; col ++) {
+                    if (x + col >= width) {
+                        break;
+                    }
+                    set_pixel(x + col, y + row, row_data[col / 8] & (0x80 >> col % 8));
+                }
+                if (y + row >= height) {
+                    break;
+                }
             }
         }
     };
