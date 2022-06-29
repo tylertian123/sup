@@ -17,7 +17,11 @@ const uiConfig = {
     signInOptions: [
         {
             provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-            requireDisplayName: false
+            requireDisplayName: false,
+            disableSignUp: {
+                status: true,
+                adminEmail: "tylertian123@gmail.com",
+            }
         }
     ]
 }

@@ -9,6 +9,7 @@
 // Use ESP8266 SDK directly for enterprise wifi
 #include "user_interface.h"
 #include "wpa2_enterprise.h"
+#include "coredecls.h"
 #include "c_types.h"
 
 #include <Arduino.h>
@@ -40,6 +41,10 @@ namespace nw {
     String input_ssid, input_password;
 
     void enterprise_connect(const char *ssid, const char *username, const char *identity, const char *password) {
+        // Don't crash on me!
+        // This should fix the issue of crashing when connecting to enterprise wifi
+        // Possibly related: https://github.com/esp8266/Arduino/pull/8529
+        disable_extra4k_at_link_time();
         wifi_set_opmode(STATION_MODE);
 
         station_config conf;

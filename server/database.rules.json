@@ -2,15 +2,20 @@
   "rules": {
     ".read": false,
     ".write": false,
+    "data": {
+      // Only allow read and write if the UID is whitelisted, since there is no way to disable new signups
+      ".read": "root.child('whitelist').hasChild(auth.uid) && root.child('whitelist').child(auth.uid).val() === true",
+      ".write": "root.child('whitelist').hasChild(auth.uid) && root.child('whitelist').child(auth.uid).val() === true",
+    },
     "users": {
       "$uid": {
-        ".read": "auth != null && $uid === auth.uid",
-        ".write": "auth != null && $uid === auth.uid"
+        // Check whitelist and also correct UID
+        ".read": "root.child('whitelist').hasChild(auth.uid) && root.child('whitelist').child(auth.uid).val() === true && $uid === auth.uid",
+        ".write": "root.child('whitelist').hasChild(auth.uid) && root.child('whitelist').child(auth.uid).val() === true && $uid === auth.uid"
       }
     },
-    "data": {
-      ".read": true,
-      ".write": true,
+    "whitelist": {
+      ".write": false
     }
   }
 }

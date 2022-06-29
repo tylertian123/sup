@@ -6,6 +6,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "next dev",
     "build": "next build && next export",
+    "emulators": "firebase emulators:start --import=./.firebase-exported",
+    "exportdb": "firebase emulators:export ./.firebase-exported",
     "createfirebaseconf": "firebase apps:sdkconfig web --json > ./pages/firebase-config.json",
     "deploy": "npm run build && firebase deploy --only hosting"
   },

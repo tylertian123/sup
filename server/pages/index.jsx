@@ -92,6 +92,8 @@ export default function Home() {
                     }
                 });
             }
+        }).catch((err) => {
+            setErrorMessage("Error: Can't fetch user data: " + err.toString());
         });
     }
 

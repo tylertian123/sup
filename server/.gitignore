@@ -70,3 +70,5 @@ out/
 pages/firebase-config.json
 
 .firebaserc
+
+.firebase-exported/
