@@ -98,6 +98,7 @@ namespace nw {
     }
 
     void wifi_connect(bool use_saved) {
+        DEBUG_OUT_FP(PSTR("MAC address: %s\n"), WiFi.macAddress().c_str());
         // Try to connect with saved network
         WiFi.persistent(false);
         WiFi.mode(WIFI_STA);
@@ -243,6 +244,7 @@ namespace nw {
             snprintf_P(buf, buf_size, PSTR(PAGE_CONTENT_CONFIG_WIFI_HTML),
                 status_str,
                 config::global_config.ent_enabled ? "WPA2-Enterprise" : "WPA2-PSK",
+                WiFi.macAddress().c_str(),
                 conf.password,
                 conf.ssid,
                 conf.password,
@@ -269,12 +271,12 @@ namespace nw {
         });
         // Config backend
         server.on("/wifi-connect", HTTP_POST, [&server]() {
-            if (!(server.hasArg("ssid") && server.hasArg("password"))) {
+            if (!server.hasArg("ssid")) {
                 server.send(400, "text/plain", "Bad Request");
                 return;
             }
             input_ssid = server.arg("ssid");
-            input_password = server.arg("password");
+            input_password = server.hasArg("password") ? server.arg("password") : "";
             // Disable enterprise wifi if it's not already disabled
             if (config::global_config.ent_enabled) {
                 config::global_config.ent_enabled = false;
