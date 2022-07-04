@@ -16,6 +16,9 @@ namespace config {
         conf = {};
         strncpy_P(conf.ap_ssid, PSTR(DEFAULT_SSID), sizeof(conf.ap_ssid));
         strncpy_P(conf.ap_password, PSTR(DEFAULT_PASSWORD), sizeof(conf.ap_password));
+        conf.wifi_ccode[0] = 'C';
+        conf.wifi_ccode[1] = 'A';
+        conf.wifi_nchan = 11;
     }
     
     bool load_config(Config &conf, int addr) {

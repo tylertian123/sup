@@ -41,9 +41,6 @@ namespace nw {
     String input_ssid, input_password;
 
     void enterprise_connect(const char *ssid, const char *username, const char *identity, const char *password) {
-        // Don't crash on me!
-        // This should fix the issue of crashing when connecting to enterprise wifi
-        // Possibly related: https://github.com/esp8266/Arduino/pull/8529
         disable_extra4k_at_link_time();
         enable_wifi_enterprise_patch();
         wifi_set_opmode(STATION_MODE);
@@ -97,6 +94,18 @@ namespace nw {
         strcpy_P(buf, status_str);
     }
 
+    void set_country() {
+        wifi_country_t c = {
+            .schan = 1,
+            .nchan = config::global_config.wifi_nchan,
+            .policy = WIFI_COUNTRY_POLICY_MANUAL,
+        };
+        c.cc[0] = config::global_config.wifi_ccode[0];
+        c.cc[1] = config::global_config.wifi_ccode[1];
+        c.cc[2] = '\0';
+        wifi_set_country(&c);
+    }
+
     void wifi_connect(bool use_saved) {
         DEBUG_OUT_FP(PSTR("MAC address: %s\n"), WiFi.macAddress().c_str());
         // Try to connect with saved network
@@ -116,6 +125,7 @@ namespace nw {
                 DEBUG_OUT_LN(F("Connecting to saved WPA2-PSK"));
                 WiFi.begin();
             }
+            set_country();
 
             int counter = 0;
             while ((connect_status = WiFi.status()) == WL_DISCONNECTED && counter * 2 < timeout) {
@@ -167,6 +177,7 @@ namespace nw {
                 WiFi.persistent(true);
                 WiFi.begin(input_ssid, input_password);
                 WiFi.persistent(false);
+                set_country();
             }
             else {
                 DEBUG_OUT_FP(PSTR("(WPA2-Enterprise) Connecting to SSID: %s, username: %s, password: %s\n"),
@@ -237,8 +248,11 @@ namespace nw {
             station_config conf;
             memset(&conf, 0, sizeof(conf));
             wifi_station_get_config_default(&conf);
+            char ccode[3] = {0};
+            ccode[0] = config::global_config.wifi_ccode[0];
+            ccode[1] = config::global_config.wifi_ccode[1];
 
-            constexpr size_t buf_size = 2048;
+            constexpr size_t buf_size = 3072;
             static_assert(sizeof(PAGE_CONTENT_CONFIG_WIFI_HTML) + 512 < buf_size, "Buffer too small");
             char *buf = new char[buf_size];
             snprintf_P(buf, buf_size, PSTR(PAGE_CONTENT_CONFIG_WIFI_HTML),
@@ -251,7 +265,9 @@ namespace nw {
                 config::global_config.ent_password,
                 config::global_config.ent_ssid,
                 config::global_config.ent_username,
-                config::global_config.ent_password);
+                config::global_config.ent_password,
+                ccode,
+                config::global_config.wifi_nchan);
 
             server.send(200, "text/html", buf);
             delete[] buf;
@@ -298,6 +314,18 @@ namespace nw {
             config::save_config();
             server.send_P(200, "text/html", PSTR(PAGE_CONTENT_WIFI_SUCCESS_HTML));
             connect_status = -1;
+        });
+        server.on("/wifi-country-config", HTTP_POST, [&server]() {
+            if (!(server.hasArg("code") && server.hasArg("nchan"))) {
+                server.send(400, "text/plain", "Bad Request");
+                return;
+            }
+            const char *ccode = server.arg("code").c_str();
+            config::global_config.wifi_ccode[0] = ccode[0];
+            config::global_config.wifi_ccode[1] = ccode[1];
+            config::global_config.wifi_nchan = atoi(server.arg("nchan").c_str());
+            config::save_config();
+            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_SUCCESS_HTML));
         });
         server.on("/db-credentials", HTTP_POST, [&server]() {
             if (!(server.hasArg("email") && server.hasArg("password") && server.hasArg("location"))) {

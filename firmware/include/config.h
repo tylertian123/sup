@@ -20,6 +20,9 @@ namespace config {
         char ent_ssid[32];
         char ent_username[32];
         char ent_password[64];
+
+        char wifi_ccode[2];
+        uint8_t wifi_nchan;
     };
 
     extern Config global_config;
