@@ -45,6 +45,7 @@ namespace nw {
         // This should fix the issue of crashing when connecting to enterprise wifi
         // Possibly related: https://github.com/esp8266/Arduino/pull/8529
         disable_extra4k_at_link_time();
+        enable_wifi_enterprise_patch();
         wifi_set_opmode(STATION_MODE);
 
         station_config conf;
