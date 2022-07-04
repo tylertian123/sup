@@ -30,7 +30,7 @@ namespace ui {
         void poll();
     };
 
-    extern display::Display<DISP_WIDTH, DISP_HEIGHT, DISP1_CS, DISP2_CS> disp;
+    extern display::Display disp;
     extern Button input1, input2;
 
     void init();

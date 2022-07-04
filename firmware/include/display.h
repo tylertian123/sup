@@ -7,8 +7,9 @@
 #include <pgmspace.h>
 #include <algorithm>
 
-#include "font.h"
 #include "common.h"
+
+#include "wiring.h"
 
 namespace display {
 
@@ -104,7 +105,7 @@ namespace display {
     };
 
     template<uint8_t Width, uint8_t Height, uint8_t... Pins>
-    class Display {
+    class MAX7219Group {
     public:
         MAX7219<Width> rows[Height];
         uint8_t disp_buf[Height * 8][Width] = {0};
@@ -112,7 +113,7 @@ namespace display {
         static constexpr uint16_t mod_width = Width, mod_height = Height;
         static constexpr uint16_t width = Width * 8, height = Height * 8;
 
-        Display() : rows{Pins...}, disp_buf{} {}
+        MAX7219Group() : rows{Pins...}, disp_buf{} {}
 
         // Initialize I/O, turn on and clear all displays.
         void init() {
@@ -161,48 +162,7 @@ namespace display {
                 disp_buf[y][x / 8] &= 0xFF - (0x80 >> (x % 8));
             }
         }
-
-        void draw_glyph_P(const font::Glyph &progmem_glyph, int16_t x, int16_t y) {
-            // Copy the glyph and its data into RAM from PROGMEM so it can be accessed
-            font::Glyph glyph(nullptr, 0, 0);
-            uint8_t data[256];
-            memcpy_P(&glyph, &progmem_glyph, sizeof(font::Glyph));
-            memcpy_P(data, glyph.data, glyph.width_bytes * glyph.height);
-            draw_glyph(glyph, x, y, data);
-        }
-
-        void draw_glyph(const font::Glyph &glyph, int16_t x, int16_t y, const uint8_t *data = nullptr) {
-            if (!data) {
-                data = glyph.data;
-            }
-            for (uint8_t row = std::max<int16_t>(y, 0); row < std::min<int16_t>(y + glyph.height, height); row ++) {
-                const uint8_t *row_data = data + (row - y) * glyph.width_bytes;
-                for (uint8_t col = std::max<int16_t>(x, 0); col < std::min<int16_t>(x + glyph.width, width); col ++) {
-                    set_pixel(col, row, row_data[(col - x) / 8] & (0x80 >> (col - x) % 8));
-                }
-            }
-        }
-
-        void draw_string(const char *str, int16_t x, int16_t y) {
-            if (y > height) {
-                return;
-            }
-            for (; *str; str ++) {
-                font::Glyph glyph(nullptr, 0, 0);
-                memcpy_P(&glyph, &font::map(*str), sizeof(font::Glyph));
-                if (x + glyph.width < 0 || y + glyph.height < 0) {
-                    x += glyph.width + 1;
-                    continue;
-                }
-                uint8_t data[256];
-                memcpy_P(data, glyph.data, glyph.width_bytes * glyph.height);
-
-                draw_glyph(glyph, x, y, data);
-                x += glyph.width + 1;
-                if (x >= width) {
-                    return;
-                }
-            }
-        }
     };
+
+    using Display = MAX7219Group<DISP_WIDTH, DISP_HEIGHT, DISP1_CS, DISP2_CS>;
 }

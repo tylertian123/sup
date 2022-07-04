@@ -42,7 +42,7 @@ namespace ui {
         }
     }
 
-    display::Display<DISP_WIDTH, DISP_HEIGHT, DISP1_CS, DISP2_CS> disp;
+    display::Display disp;
     Button input1(INPUT_BTN1), input2(INPUT_BTN2);
 
     uint8_t disp_brightness = 0;

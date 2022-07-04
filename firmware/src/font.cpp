@@ -1,4 +1,4 @@
-#include "font.h"
+#include "graphics.h"
 
 #include <pgmspace.h>
 #include <stdint.h>
@@ -7,7 +7,7 @@
 // sizeof(#x) - 3 subtracts 3 for 0b prefix + null terminator
 #define P(x) (x << (8 - (sizeof(#x) - 3)))
 
-namespace font {
+namespace graphics {
 
     const PROGMEM uint8_t CHAR_SPACE_DATA[] = {
         P(0b000),
@@ -265,7 +265,7 @@ namespace font {
         Glyph(CHAR_Z_DATA, 4, 5),
     };
 
-    const Glyph& map(char c) {
+    const Glyph& map_char(char c) {
         if (c >= 'A' && c <= 'Z') {
             return UPPERCASE_CHARS[c - 'A'];
         }
