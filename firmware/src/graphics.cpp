@@ -43,9 +43,7 @@ namespace graphics {
         this->str = str;
         // Recompute text width
         text_width = str_width(str);
-        if (region.min_x + text_width < region.max_x) {
-            scroll = false;
-        }
+        scroll = region.min_x + text_width >= region.max_x;
         // Reset scrolling parameters
         last_update = millis();
         scroll_offset = 0;
@@ -112,7 +110,7 @@ namespace graphics {
         }
         clear(disp, {x, x + 5, y, y + 5});
         SPINNER.draw_P(disp, x, y);
-        disp.clear_pixel(SPINNER_ANIM_X[state], SPINNER_ANIM_Y[state]);
+        disp.clear_pixel(x + SPINNER_ANIM_X[state], y + SPINNER_ANIM_Y[state]);
         return true;
     }
 

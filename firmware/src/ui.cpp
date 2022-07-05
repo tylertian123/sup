@@ -1,6 +1,7 @@
 #include "ui.h"
 #include "wiring.h"
 #include "display.h"
+#include "graphics.h"
 #include "common.h"
 #include "fb.h"
 
@@ -45,6 +46,10 @@ namespace ui {
     display::Display disp;
     Button input1(INPUT_BTN1), input2(INPUT_BTN2);
 
+    graphics::ScrollingText top_text(6, 1, 26, 5);
+    graphics::ScrollingText bottom_text(0, 8, 32, 5);
+    graphics::Spinner spinner(0, 1);
+
     uint8_t disp_brightness = 0;
     bool sleep = false;
 
@@ -54,9 +59,19 @@ namespace ui {
         input1.init();
         input2.init();
         pinMode(STATUS_LED, OUTPUT);
+        top_text.set_str("Init");
+        bottom_text.set_str("Please wait");
     }
 
     void poll(bool init_success) {
+        if (!init_success) {
+            bool update = false;
+            update = top_text.draw(disp) || update;
+            update = bottom_text.draw(disp) || update;
+            update = spinner.draw(disp) || update;
+            if (update)
+                disp.update();
+        }
         input1.poll();
         input2.poll();
 

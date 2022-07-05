@@ -23,12 +23,22 @@
 
 bool init_success = false;
 
+void timer_cb() {
+    ui::poll(init_success);
+}
+
 void setup() {
     Serial.begin(115200);
     DEBUG_OUT_LN(F("Started"));
 
+
     ui::init();
     digitalWrite(STATUS_LED, 0);
+
+    timer1_attachInterrupt(timer_cb);
+    // 80MHz / 256 / 6250 = 20ms^-1
+    timer1_write(6250);
+    timer1_enable(TIM_DIV256, TIM_EDGE, TIM_LOOP);
 
     config::init();
     if (!config::load_config()) {
@@ -63,5 +73,4 @@ void loop() {
         // Data comes from a stream callback so no need to check this result here
         Firebase.ready();
     }
-    ui::poll(init_success);
 }
