@@ -234,7 +234,7 @@ namespace graphics {
     };
 
     const PROGMEM Glyph CHAR_UNKNOWN(CHAR_QMARK_DATA, 4, 5);
-    const PROGMEM Glyph CHAR_SPACE(CHAR_SPACE_DATA, 3, 5);
+    const PROGMEM Glyph CHAR_SPACE(CHAR_SPACE_DATA, 1, 5);
     
     const PROGMEM Glyph UPPERCASE_CHARS[] = {
         Glyph(CHAR_A_DATA, 4, 5),

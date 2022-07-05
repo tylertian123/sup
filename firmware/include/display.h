@@ -154,12 +154,18 @@ namespace display {
             }
         }
 
+        void set_pixel(uint8_t x, uint8_t y) {
+            disp_buf[y][x / 8] |= 0x80 >> (x % 8);
+        }
+        void clear_pixel(uint8_t x, uint8_t y) {
+            disp_buf[y][x / 8] &= 0xFF - (0x80 >> (x % 8));
+        }
         void set_pixel(uint8_t x, uint8_t y, bool state) {
             if (state) {
-                disp_buf[y][x / 8] |= 0x80 >> (x % 8);
+                set_pixel(x, y);
             }
             else {
-                disp_buf[y][x / 8] &= 0xFF - (0x80 >> (x % 8));
+                clear_pixel(x, y);
             }
         }
     };
