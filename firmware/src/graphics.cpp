@@ -75,6 +75,40 @@ namespace graphics {
         }
     }
 
+    const PROGMEM uint8_t SPINNER_DATA[] = {
+        _PAD(0b01110),
+        _PAD(0b10001),
+        _PAD(0b10001),
+        _PAD(0b10001),
+        _PAD(0b01110),
+    };
+    const PROGMEM Glyph SPINNER(SPINNER_DATA, 5, 5);
+    const uint8_t SPINNER_ANIM_X[] = {2, 3, 4, 4, 4, 3, 2, 1, 0, 0, 0, 1};
+    const uint8_t SPINNER_ANIM_Y[] = {0, 0, 1, 2, 3, 4, 4, 4, 3, 2, 1, 0};
+    constexpr uint8_t SPINNER_ANIM_LEN = sizeof(SPINNER_ANIM_X);
+
+    bool Spinner::update() {
+        unsigned long t = millis();
+        if (t - last_update > SPIN_DELAY) {
+            last_update += SPIN_DELAY;
+            state ++;
+            if (state >= SPINNER_ANIM_LEN) {
+                state = 0;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    void Spinner::draw(display::Display &disp) {
+        if (!update()) {
+            return;
+        }
+        clear(disp, {x, x + 5, y, y + 5});
+        SPINNER.draw_P(disp, x, y);
+        disp.clear_pixel(SPINNER_ANIM_X[state], SPINNER_ANIM_Y[state]);
+    }
+
     void clear(display::Display &disp, Region region) {
         region.constrain_to_screen();
         // Some clever bitwise trickery would make this much faster

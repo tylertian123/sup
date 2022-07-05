@@ -3,6 +3,10 @@
 #include <stdint.h>
 #include "display.h"
 
+// Right pads binary literal with 0s to make it 1 byte
+// sizeof(#x) - 3 subtracts 3 for 0b prefix + null terminator
+#define _PAD(x) (x << (8 - (sizeof(#x) - 3)))
+
 namespace graphics {
     const struct Region {
         // Inclusive
@@ -40,8 +44,10 @@ namespace graphics {
 
         int16_t x, y;
         Region region;
+        
         const char *str = nullptr;
         uint16_t text_width = 0;
+
         unsigned long last_update = 0;
         uint16_t scroll_offset = 0;
 
@@ -49,6 +55,20 @@ namespace graphics {
         ScrollingText(int16_t x, int16_t y, uint16_t width, uint16_t height)
             : x(x), y(y), region{x, x + width, y, y + height} {}
         void set_str(const char *str);
+        bool update();
+        void draw(display::Display &disp);
+    };
+
+    class Spinner {
+    private:
+        static constexpr unsigned int SPIN_DELAY = 75;
+        int16_t x, y;
+
+        unsigned long last_update = 0;
+        uint8_t state = 0;
+    
+    public:
+        Spinner(int16_t x, int16_t y) : x(x), y(y) {};
         bool update();
         void draw(display::Display &disp);
     };
