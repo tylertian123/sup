@@ -47,6 +47,7 @@ namespace graphics {
         
         const char *str = nullptr;
         uint16_t text_width = 0;
+        bool scroll = false;
 
         unsigned long last_update = 0;
         uint16_t scroll_offset = 0;
@@ -56,7 +57,7 @@ namespace graphics {
             : x(x), y(y), region{x, x + width, y, y + height} {}
         void set_str(const char *str);
         bool update();
-        void draw(display::Display &disp);
+        bool draw(display::Display &disp);
     };
 
     class Spinner {
@@ -70,7 +71,7 @@ namespace graphics {
     public:
         Spinner(int16_t x, int16_t y) : x(x), y(y) {};
         bool update();
-        void draw(display::Display &disp);
+        bool draw(display::Display &disp);
     };
 
     const Glyph& map_char(char c);

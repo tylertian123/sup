@@ -43,6 +43,9 @@ namespace graphics {
         this->str = str;
         // Recompute text width
         text_width = str_width(str);
+        if (region.min_x + text_width < region.max_x) {
+            scroll = false;
+        }
         // Reset scrolling parameters
         last_update = millis();
         scroll_offset = 0;
@@ -53,26 +56,29 @@ namespace graphics {
         // Scroll by 1 pixel if scroll delay time reached
         if (t - last_update > SCROLL_DELAY) {
             last_update += SCROLL_DELAY;
-            scroll_offset ++;
-            // Wrap around
-            if (scroll_offset >= text_width + EMPTY_SPACE) {
-                scroll_offset = 0;
+            if (scroll) {
+                scroll_offset ++;
+                // Wrap around
+                if (scroll_offset >= text_width + EMPTY_SPACE) {
+                    scroll_offset = 0;
+                }
             }
             return true;
         }
         return false;
     }
 
-    void ScrollingText::draw(display::Display &disp) {
+    bool ScrollingText::draw(display::Display &disp) {
         if (!update()) {
-            return;
+            return false;
         }
         clear(disp, region);
         draw_str(disp, str, x - scroll_offset, y, region);
         // Draw second part if if it's on screen
-        if (x - scroll_offset + text_width + EMPTY_SPACE < region.max_x) {
+        if (scroll && x - scroll_offset + text_width + EMPTY_SPACE < region.max_x) {
             draw_str(disp, str, x - scroll_offset + text_width + EMPTY_SPACE, y, region);
         }
+        return true;
     }
 
     const PROGMEM uint8_t SPINNER_DATA[] = {
@@ -100,13 +106,14 @@ namespace graphics {
         return false;
     }
 
-    void Spinner::draw(display::Display &disp) {
+    bool Spinner::draw(display::Display &disp) {
         if (!update()) {
-            return;
+            return false;
         }
         clear(disp, {x, x + 5, y, y + 5});
         SPINNER.draw_P(disp, x, y);
         disp.clear_pixel(SPINNER_ANIM_X[state], SPINNER_ANIM_Y[state]);
+        return true;
     }
 
     void clear(display::Display &disp, Region region) {
