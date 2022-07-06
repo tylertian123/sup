@@ -127,8 +127,7 @@ namespace nw {
             }
             set_country();
 
-            ui::top_text.set_str("WiFi");
-            ui::bottom_text.set_str("Connecting");
+            ui::set_text("WiFi", "Connecting");
             connect_status = WiFi.waitForConnectResult();
         }
 
@@ -144,6 +143,7 @@ namespace nw {
 
         // In case of failure, run the access point + config server
         while (connect_status != WL_CONNECTED) {
+            ui::set_text(connect_status == -2 ? "Config Mode" : "WiFi Error", "Use web config");
             digitalWrite(STATUS_LED, 0);
 
             // Enable access point
@@ -187,9 +187,8 @@ namespace nw {
                 //     config::global_config.ent_username, config::global_config.ent_password);
             }
             // Wait for connection while flashing
-            ui::top_text.set_str("WiFi");
-            ui::bottom_text.set_str("Connecting");
-            if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+            ui::set_text("WiFi", "Connecting");
+            if ((connect_status = WiFi.waitForConnectResult()) != WL_CONNECTED) {
                 DEBUG_OUT_LN(F("Failed to connect!"));
             }
         }

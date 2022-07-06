@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include "display.h"
+#include <Arduino.h>
 
 // Right pads binary literal with 0s to make it 1 byte
 // sizeof(#x) - 3 subtracts 3 for 0b prefix + null terminator
@@ -39,13 +40,13 @@ namespace graphics {
 
     class ScrollingText {
     private:
-        static constexpr unsigned int SCROLL_DELAY = 75;
-        static constexpr uint16_t EMPTY_SPACE = 5;
+        static constexpr unsigned int SCROLL_DELAY = 50;
+        static constexpr uint16_t EMPTY_SPACE = 8;
 
         int16_t x, y;
         Region region;
         
-        const char *str = nullptr;
+        String str;
         uint16_t text_width = 0;
         bool scroll = false;
 

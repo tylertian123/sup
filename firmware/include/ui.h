@@ -34,10 +34,7 @@ namespace ui {
     extern display::Display disp;
     extern Button input1, input2;
 
-    extern graphics::ScrollingText top_text;
-    extern graphics::ScrollingText bottom_text;
-    extern graphics::Spinner spinner;
-
     void init();
-    void poll(bool init_success);
+    void set_text(const char *top, const char *bottom);
+    void poll();
 }

@@ -50,6 +50,7 @@ namespace ui {
     graphics::ScrollingText bottom_text(0, 8, 32, 5);
     graphics::Spinner spinner(0, 1);
 
+    bool has_data = false;
     uint8_t disp_brightness = 0;
     bool sleep = false;
 
@@ -63,8 +64,17 @@ namespace ui {
         bottom_text.set_str("Please wait");
     }
 
-    void poll(bool init_success) {
-        if (!init_success) {
+    void set_text(const char *top, const char *bottom) {
+        if (top) {
+            top_text.set_str(top);
+        }
+        if (bottom) {
+            bottom_text.set_str(bottom);
+        }
+    }
+
+    void poll() {
+        if (!has_data) {
             bool update = false;
             update = top_text.draw(disp) || update;
             update = bottom_text.draw(disp) || update;
@@ -72,6 +82,7 @@ namespace ui {
             if (update)
                 disp.update();
         }
+            
         input1.poll();
         input2.poll();
 
@@ -114,24 +125,22 @@ namespace ui {
             disp.update();
             disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, disp_brightness);
         }
-        if (init_success) {
-            // Sleep mode
-            if (input2.held && !input1.down) {
-                input2.held = false;
-                sleep = true;
-                disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 0);
-            }
-            // Check for data updates
-            if (fb::disp_data_updated) {
-                fb::disp_data_updated = false;
-                memcpy(disp.disp_buf, fb::disp_data, sizeof(disp.disp_buf));
-                disp.update();
-                DEBUG_OUT_LN(F("Display updated"));
-                // Automatically exit sleep mode after display update
-                if (sleep) {
-                    sleep = false;
-                    disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 1);
-                }
+        if (input2.held && !input1.down) {
+            input2.held = false;
+            sleep = true;
+            disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 0);
+        }
+        // Check for data updates
+        if (fb::disp_data_updated) {
+            fb::disp_data_updated = false;
+            has_data = true;
+            memcpy(disp.disp_buf, fb::disp_data, sizeof(disp.disp_buf));
+            disp.update();
+            DEBUG_OUT_LN(F("Display updated"));
+            // Automatically exit sleep mode after display update
+            if (sleep) {
+                sleep = false;
+                disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 1);
             }
         }
     }

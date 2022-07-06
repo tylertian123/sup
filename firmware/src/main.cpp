@@ -3,6 +3,7 @@
 #include <Firebase_ESP_Client.h>
 #include <stdio.h>
 #include <string.h>
+#include <osapi.h>
 
 #include "common.h"
 #include "wiring.h"
@@ -23,22 +24,21 @@
 
 bool init_success = false;
 
-void timer_cb() {
-    ui::poll(init_success);
+os_timer_t timer;
+
+void timer_cb(void *arg) {
+    ui::poll();
 }
 
 void setup() {
     Serial.begin(115200);
     DEBUG_OUT_LN(F("Started"));
 
-
     ui::init();
     digitalWrite(STATUS_LED, 0);
 
-    timer1_attachInterrupt(timer_cb);
-    // 80MHz / 256 / 6250 = 20ms^-1
-    timer1_write(6250);
-    timer1_enable(TIM_DIV256, TIM_EDGE, TIM_LOOP);
+    os_timer_setfn(&timer, timer_cb, nullptr);
+    os_timer_arm(&timer, 10, true);
 
     config::init();
     if (!config::load_config()) {
@@ -52,15 +52,18 @@ void setup() {
 
     DEBUG_OUT_FP(PSTR("Local IP address: %s\n"), WiFi.localIP().toString().c_str());
 
+    ui::set_text("DB", "Connecting");
     if(!fb::init()) {
         DEBUG_OUT_LN(F("Failed to connect to Firebase!"));
     }
     else {
         DEBUG_OUT_LN(F("Connected to Firebase"));
+        ui::set_text(nullptr, "Starting");
         if (!fb::start_stream()) {
             DEBUG_OUT_LN(F("Failed to start stream!"));
         }
         else {
+            ui::set_text("DB", "Waiting for data");
             DEBUG_OUT_LN(F("Stream started"));
             init_success = true;
         }
@@ -73,4 +76,5 @@ void loop() {
         // Data comes from a stream callback so no need to check this result here
         Firebase.ready();
     }
+    ui::poll();
 }

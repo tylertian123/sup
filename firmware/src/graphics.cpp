@@ -71,10 +71,10 @@ namespace graphics {
             return false;
         }
         clear(disp, region);
-        draw_str(disp, str, x - scroll_offset, y, region);
+        draw_str(disp, str.c_str(), x - scroll_offset, y, region);
         // Draw second part if if it's on screen
         if (scroll && x - scroll_offset + text_width + EMPTY_SPACE < region.max_x) {
-            draw_str(disp, str, x - scroll_offset + text_width + EMPTY_SPACE, y, region);
+            draw_str(disp, str.c_str(), x - scroll_offset + text_width + EMPTY_SPACE, y, region);
         }
         return true;
     }
