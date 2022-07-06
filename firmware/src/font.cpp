@@ -62,19 +62,19 @@ namespace graphics {
     };
 
     const PROGMEM uint8_t CHAR_E_DATA[] = {
-        _PAD(0b1111),
+        _PAD(0b111),
+        _PAD(0b100),
+        _PAD(0b111),
         _PAD(0b1000),
-        _PAD(0b1110),
-        _PAD(0b1000),
-        _PAD(0b1111),
+        _PAD(0b111),
     };
 
     const PROGMEM uint8_t CHAR_F_DATA[] = {
-        _PAD(0b1111),
-        _PAD(0b1000),
-        _PAD(0b1110),
-        _PAD(0b1000),
-        _PAD(0b1000),
+        _PAD(0b111),
+        _PAD(0b100),
+        _PAD(0b111),
+        _PAD(0b100),
+        _PAD(0b100),
     };
 
     const PROGMEM uint8_t CHAR_G_DATA[] = {
@@ -149,7 +149,7 @@ namespace graphics {
         _PAD(0b0110),
     };
 
-    const PROGMEM uint8_t CHAR_PAD_DATA[] = {
+    const PROGMEM uint8_t CHAR_P_DATA[] = {
         _PAD(0b1110),
         _PAD(0b1001),
         _PAD(0b1110),
@@ -182,11 +182,11 @@ namespace graphics {
     };
 
     const PROGMEM uint8_t CHAR_T_DATA[] = {
-        _PAD(0b11111),
-        _PAD(0b00100),
-        _PAD(0b00100),
-        _PAD(0b00100),
-        _PAD(0b00100),
+        _PAD(0b111),
+        _PAD(0b010),
+        _PAD(0b010),
+        _PAD(0b010),
+        _PAD(0b010),
     };
 
     const PROGMEM uint8_t CHAR_U_DATA[] = {
@@ -246,8 +246,8 @@ namespace graphics {
         Glyph(CHAR_B_DATA, 4, 5),
         Glyph(CHAR_C_DATA, 4, 5),
         Glyph(CHAR_D_DATA, 4, 5),
-        Glyph(CHAR_E_DATA, 4, 5),
-        Glyph(CHAR_F_DATA, 4, 5),
+        Glyph(CHAR_E_DATA, 3, 5),
+        Glyph(CHAR_F_DATA, 3, 5),
         Glyph(CHAR_G_DATA, 4, 5),
         Glyph(CHAR_H_DATA, 4, 5),
         Glyph(CHAR_I_DATA, 3, 5),
@@ -257,11 +257,11 @@ namespace graphics {
         Glyph(CHAR_M_DATA, 5, 5),
         Glyph(CHAR_N_DATA, 4, 5),
         Glyph(CHAR_O_DATA, 4, 5),
-        Glyph(CHAR_PAD_DATA, 4, 5),
+        Glyph(CHAR_P_DATA, 4, 5),
         Glyph(CHAR_Q_DATA, 4, 5),
         Glyph(CHAR_R_DATA, 4, 5),
         Glyph(CHAR_S_DATA, 4, 5),
-        Glyph(CHAR_T_DATA, 5, 5),
+        Glyph(CHAR_T_DATA, 3, 5),
         Glyph(CHAR_U_DATA, 4, 5),
         Glyph(CHAR_V_DATA, 5, 5),
         Glyph(CHAR_W_DATA, 5, 5),
