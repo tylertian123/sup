@@ -16,17 +16,18 @@ namespace graphics {
         max_y = std::min<int16_t>(display::Display::height, max_y);
     }
 
+    Glyph::Glyph(const Glyph &progmem_glyph, void *data_ptr) {
+        memcpy_P(this, &progmem_glyph, sizeof(Glyph));
+        if (data_ptr) {
+            memcpy_P(data_ptr, data, width_bytes * height);
+            data = static_cast<uint8_t *>(data_ptr);
+        }
+    }
+
     void Glyph::draw_P(display::Display &disp, int16_t x, int16_t y, Region r) const {
-        Glyph glyph;
-        uint8_t ramData[GLYPH_BUF_SIZE];
-        // Copy glyph into and location of data into RAM
-        memcpy_P(&glyph, this, sizeof(Glyph));
-        // Copy pixel data into ram
-        memcpy_P(ramData, glyph.data, glyph.width_bytes * glyph.height);
-        // Point the data location to the location in ram
-        glyph.data = ramData;
-        
-        glyph.draw(disp, x, y, r);
+        uint8_t ram_data[GLYPH_BUF_SIZE];
+        Glyph g(*this, ram_data);
+        g.draw(disp, x, y, r);
     }
 
     void Glyph::draw(display::Display &disp, int16_t x, int16_t y, Region r) const {
@@ -45,15 +46,14 @@ namespace graphics {
         text_width = str_width(str);
         scroll = region.min_x + text_width >= region.max_x;
         // Reset scrolling parameters
-        last_update = millis();
-        scroll_offset = 0;
+        scroll_offset = -1;
     }
     
     bool ScrollingText::update() {
         unsigned long t = millis();
         // Scroll by 1 pixel if scroll delay time reached
         if (t - last_update > SCROLL_DELAY) {
-            last_update += SCROLL_DELAY;
+            last_update += SCROLL_DELAY * ((t - last_update) / SCROLL_DELAY);
             if (scroll) {
                 scroll_offset ++;
                 // Wrap around
@@ -94,7 +94,7 @@ namespace graphics {
     bool Spinner::update() {
         unsigned long t = millis();
         if (t - last_update > SPIN_DELAY) {
-            last_update += SPIN_DELAY;
+            last_update += SPIN_DELAY * ((t - last_update) / SPIN_DELAY);
             state ++;
             if (state >= SPINNER_ANIM_LEN) {
                 state = 0;
@@ -130,17 +130,13 @@ namespace graphics {
             return;
         }
         for (; *str; str ++) {
-            Glyph glyph;
-            // Map the current character to a glyph, and copy it from PROGMEM to RAM
-            memcpy_P(&glyph, &map_char(*str), sizeof(graphics::Glyph));
+            uint8_t data[GLYPH_BUF_SIZE];
+            // Make an instance in RAM
+            Glyph glyph(map_char(*str), data);
             if (x + glyph.width < 0 || y + glyph.height < 0) {
                 x += glyph.width + 1;
                 continue;
             }
-            // Copy its data into RAM
-            uint8_t data[GLYPH_BUF_SIZE];
-            memcpy_P(data, glyph.data, glyph.width_bytes * glyph.height);
-            glyph.data = data;
 
             glyph.draw(disp, x, y, r);
             x += glyph.width + 1;

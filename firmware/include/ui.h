@@ -34,7 +34,12 @@ namespace ui {
     extern display::Display disp;
     extern Button input1, input2;
 
+    enum class IconType {
+        SPINNER, ERROR
+    };
+
     void init();
     void set_text(const char *top, const char *bottom);
+    void set_icon(IconType type);
     void poll();
 }

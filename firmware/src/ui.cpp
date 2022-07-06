@@ -48,7 +48,9 @@ namespace ui {
 
     graphics::ScrollingText top_text(6, 1, 26, 5);
     graphics::ScrollingText bottom_text(0, 8, 32, 5);
+    IconType icon_type = IconType::SPINNER;
     graphics::Spinner spinner(0, 1);
+    bool disp_update = false;
 
     bool has_data = false;
     uint8_t disp_brightness = 0;
@@ -60,8 +62,8 @@ namespace ui {
         input1.init();
         input2.init();
         pinMode(STATUS_LED, OUTPUT);
-        top_text.set_str("Init");
-        bottom_text.set_str("Please wait");
+        set_text("Init", "Please wait");
+        disp_update = true;
     }
 
     void set_text(const char *top, const char *bottom) {
@@ -73,14 +75,31 @@ namespace ui {
         }
     }
 
+    void set_icon(IconType type) {
+        icon_type = type;
+        if (type == IconType::ERROR) {
+            graphics::clear(disp, {0, 5, 1, 6});
+            uint8_t data[16];
+            graphics::Glyph glyph(graphics::map_char('!'), data);
+            glyph.draw(disp, (5 - glyph.width) / 2, (5 - glyph.height) / 2 + 1);
+            // Update a single time to draw the updated icon
+            disp_update = true;
+        }
+    }
+
     void poll() {
         if (!has_data) {
-            bool update = false;
-            update = top_text.draw(disp) || update;
-            update = bottom_text.draw(disp) || update;
-            update = spinner.draw(disp) || update;
-            if (update)
+            // Note disp_update is not cleared before poll
+            // This allows it to be used as an update flag
+            disp_update = top_text.draw(disp) || disp_update;
+            disp_update = bottom_text.draw(disp) || disp_update;
+            if (icon_type == IconType::SPINNER) {
+                disp_update = spinner.draw(disp) || disp_update;
+            }
+            if (disp_update) {
                 disp.update();
+                disp_update = false;
+            }
         }
             
         input1.poll();

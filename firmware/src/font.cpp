@@ -21,6 +21,14 @@ namespace graphics {
         _PAD(0b0100),
     };
 
+    const PROGMEM uint8_t CHAR_EXMARK_DATA[] = {
+        _PAD(0b1),
+        _PAD(0b1),
+        _PAD(0b1),
+        _PAD(0b0),
+        _PAD(0b1),
+    };
+
     const PROGMEM uint8_t CHAR_A_DATA[] = {
         _PAD(0b0110),
         _PAD(0b1001),
@@ -229,7 +237,8 @@ namespace graphics {
         _PAD(0b1111),
     };
 
-    const PROGMEM Glyph CHAR_UNKNOWN(CHAR_QMARK_DATA, 4, 5);
+    const PROGMEM Glyph CHAR_QMARK(CHAR_QMARK_DATA, 4, 5);
+    const PROGMEM Glyph CHAR_EXMARK(CHAR_EXMARK_DATA, 1, 5);
     const PROGMEM Glyph CHAR_SPACE(CHAR_SPACE_DATA, 1, 5);
     
     const PROGMEM Glyph UPPERCASE_CHARS[] = {
@@ -272,9 +281,11 @@ namespace graphics {
         switch (c) {
         case ' ':
             return CHAR_SPACE;
+        case '!':
+            return CHAR_EXMARK;
         case '?':
         default:
-            return CHAR_UNKNOWN;
+            return CHAR_QMARK;
         }
     }
 }
