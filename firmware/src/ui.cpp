@@ -43,8 +43,54 @@ namespace ui {
         }
     }
 
+    void LED::init(bool state) {
+        pinMode(pin, OUTPUT);
+        set(state);
+        last_change = millis();
+    }
+
+    void LED::set(bool state) {
+        blink_duration = 0;
+        blink_counter = 0;
+        // Note state is inverted since writing a high turns off the LED
+        digitalWrite(pin, !state);
+    }
+
+    void LED::blink(uint16_t duration, uint16_t times) {
+        // Don't change if busy
+        if (blink_duration) {
+            return;
+        }
+        // Since the counter counts state changes, not blink cycles, this needs to be doubled
+        blink_counter = times == INDEFINITE ? times : times * 2;
+        blink_duration = duration;
+    }
+
+    void LED::poll() {
+        unsigned long t = millis();
+        if (blink_duration) {
+            // Check for state change
+            if (t - last_change >= blink_duration) {
+                // Add enough time for any missed changes
+                last_change += blink_duration * ((t - last_change) / blink_duration);
+                digitalWrite(pin, !digitalRead(pin));
+                // Decrement counter, stop blinking if counter reaches 0
+                if (blink_counter != INDEFINITE) {
+                    blink_counter --;
+                    if (!blink_counter) {
+                        blink_duration = 0;
+                    }
+                }
+            }
+        }
+        else {
+            last_change = t;
+        }
+    }
+
     display::Display disp;
     Button input1(INPUT_BTN1), input2(INPUT_BTN2);
+    LED status_led(STATUS_LED), error_led(ERROR_LED);
 
     graphics::ScrollingText top_text(6, 1, 26, 5);
     graphics::ScrollingText bottom_text(0, 8, 32, 5);
@@ -61,6 +107,8 @@ namespace ui {
         disp.init();
         input1.init();
         input2.init();
+        status_led.init();
+        error_led.init();
         pinMode(STATUS_LED, OUTPUT);
         set_text("Init", "Please wait");
         disp_update = true;
@@ -104,6 +152,8 @@ namespace ui {
             
         input1.poll();
         input2.poll();
+        status_led.poll();
+        error_led.poll();
 
         // Exit sleep mode on any input
         if (sleep && (input1.pressed || input2.pressed)) {
@@ -143,16 +193,19 @@ namespace ui {
             }
             disp.update();
             disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, disp_brightness);
+            status_led.blink(25, 1);
         }
         if (input2.held && !input1.down) {
             input2.held = false;
             sleep = true;
             disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 0);
+            status_led.blink(25, 1);
         }
         // Check for data updates
         if (fb::disp_data_updated) {
             fb::disp_data_updated = false;
             has_data = true;
+            status_led.blink(100, 2);
             memcpy(disp.disp_buf, fb::disp_data, sizeof(disp.disp_buf));
             disp.update();
             DEBUG_OUT_LN(F("Display updated"));

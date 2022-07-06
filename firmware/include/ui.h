@@ -31,8 +31,29 @@ namespace ui {
         void poll();
     };
 
+    class LED {
+    private:
+        const uint8_t pin;
+        unsigned long last_change;
+        // Zero when not in blink mode
+        uint16_t blink_duration = 0;
+        // Note this counts the number of state changes, not actual blink cycles
+        // 0xFFFF when blinking indefinitely
+        uint16_t blink_counter = 0;
+    
+    public:
+        static constexpr uint16_t INDEFINITE = 0xFFFF;
+
+        LED(uint8_t pin) : pin(pin) {}
+        void init(bool state = false);
+        void set(bool state);
+        void blink(uint16_t duration, uint16_t times = INDEFINITE);
+        void poll();
+    };
+
     extern display::Display disp;
     extern Button input1, input2;
+    extern LED status_led, error_led;
 
     enum class IconType {
         SPINNER, ERROR

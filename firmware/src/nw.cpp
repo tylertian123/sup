@@ -129,13 +129,18 @@ namespace nw {
 
             ui::set_icon(ui::IconType::SPINNER);
             ui::set_text("WiFi", "Connecting");
+            ui::status_led.blink(400);
             connect_status = WiFi.waitForConnectResult();
         }
 
         if (connect_status == WL_CONNECTED) {
             DEBUG_OUT_LN(F("Connected to saved network"));
-            digitalWrite(STATUS_LED, 1);
+            ui::status_led.set(false);
             return;
+        }
+
+        if (connect_status > 0) {
+            ui::error_led.blink(200, connect_status);
         }
         char status_str[64];
         decode_wifi_status(connect_status, status_str);
@@ -146,7 +151,7 @@ namespace nw {
         while (connect_status != WL_CONNECTED) {
             ui::set_icon(ui::IconType::ERROR);
             ui::set_text(connect_status == -2 ? "Config Mode" : "WiFi Error", "Use web config");
-            digitalWrite(STATUS_LED, 0);
+            ui::status_led.set(true);
 
             // Enable access point
             init_ap();
@@ -191,11 +196,15 @@ namespace nw {
             // Wait for connection while flashing
             ui::set_icon(ui::IconType::SPINNER);
             ui::set_text("WiFi", "Connecting");
+            ui::status_led.blink(400);
             if ((connect_status = WiFi.waitForConnectResult()) != WL_CONNECTED) {
                 DEBUG_OUT_LN(F("Failed to connect!"));
+                if (connect_status > 0) {
+                    ui::error_led.blink(200, connect_status);
+                }
             }
         }
-        digitalWrite(STATUS_LED, 1);
+        ui::status_led.set(false);
     }
 
     void init_ap() {

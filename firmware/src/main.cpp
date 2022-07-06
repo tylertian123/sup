@@ -35,7 +35,8 @@ void setup() {
     DEBUG_OUT_LN(F("Started"));
 
     ui::init();
-    digitalWrite(STATUS_LED, 0);
+    ui::error_led.set(false);
+    ui::status_led.set(false);
 
     os_timer_setfn(&timer, timer_cb, nullptr);
     os_timer_arm(&timer, 10, true);
@@ -43,6 +44,7 @@ void setup() {
     config::init();
     if (!config::load_config()) {
         DEBUG_OUT_LN(F("Failed to load config object, using default values"));
+        ui::error_led.blink(400, 1);
     }
 
     if (ui::input1.down) {
@@ -57,6 +59,7 @@ void setup() {
         DEBUG_OUT_LN(F("Failed to connect to Firebase!"));
         ui::set_text(nullptr, "Connection error");
         ui::set_icon(ui::IconType::ERROR);
+        ui::error_led.set(true);
     }
     else {
         DEBUG_OUT_LN(F("Connected to Firebase"));
@@ -65,6 +68,7 @@ void setup() {
             DEBUG_OUT_LN(F("Failed to start stream!"));
             ui::set_text(nullptr, "Stream error");
             ui::set_icon(ui::IconType::ERROR);
+            ui::error_led.set(true);
         }
         else {
             ui::set_text(nullptr, "Waiting for data");

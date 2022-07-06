@@ -2,7 +2,8 @@
 
 #include <Arduino.h>
 
-#define STATUS_LED D0
+#define STATUS_LED D4
+#define ERROR_LED D0
 #define INPUT_BTN1 D1
 #define INPUT_BTN2 D6
 #define DISP1_CS D2
