@@ -60,7 +60,7 @@ export default function Config() {
                 return;
             }
             const data = new FormData(form);
-            db.ref("/users/" + loginUser.uid).set({
+            db.ref("/users/" + loginUser.uid).update({
                 writeTo: data.get("dataLocation")
             }).then(() => {
                 setSuccessMessage("Configuration updated!");
