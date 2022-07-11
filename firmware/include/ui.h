@@ -28,7 +28,7 @@ namespace ui {
         Button(uint8_t pin) : pin(pin) {}
         void init();
         // Update the state of the button.
-        void poll();
+        void poll(unsigned long t = 0);
     };
 
     class LED {
@@ -48,7 +48,7 @@ namespace ui {
         void init(bool state = false);
         void set(bool state);
         void blink(uint16_t duration, uint16_t times = INDEFINITE);
-        void poll();
+        void poll(unsigned long t = 0);
     };
 
     extern display::Display disp;

@@ -58,10 +58,10 @@ namespace graphics {
 
     public:
         ScrollingText(int16_t x, int16_t y, uint16_t width, uint16_t height)
-            : x(x), y(y), region{x, x + width, y, y + height} {}
+            : x(x), y(y), region{x, static_cast<int16_t>(x + width), y, static_cast<int16_t>(y + height)} {}
         void set_str(const char *str);
-        bool update();
-        bool draw(display::Display &disp);
+        bool update(unsigned long t = 0);
+        bool draw(display::Display &disp, unsigned long t = 0);
     };
 
     class Spinner {
@@ -74,8 +74,8 @@ namespace graphics {
     
     public:
         Spinner(int16_t x, int16_t y) : x(x), y(y) {};
-        bool update();
-        bool draw(display::Display &disp);
+        bool update(unsigned long t = 0);
+        bool draw(display::Display &disp, unsigned long t = 0);
     };
 
     const Glyph& map_char(char c);

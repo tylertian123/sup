@@ -49,8 +49,10 @@ namespace graphics {
         scroll_offset = -1;
     }
     
-    bool ScrollingText::update() {
-        unsigned long t = millis();
+    bool ScrollingText::update(unsigned long t) {
+        if (!t) {
+            t = millis();
+        }
         // Scroll by 1 pixel if scroll delay time reached
         if (t - last_update > SCROLL_DELAY) {
             last_update += SCROLL_DELAY * ((t - last_update) / SCROLL_DELAY);
@@ -66,8 +68,8 @@ namespace graphics {
         return false;
     }
 
-    bool ScrollingText::draw(display::Display &disp) {
-        if (!update()) {
+    bool ScrollingText::draw(display::Display &disp, unsigned long t) {
+        if (!update(t)) {
             return false;
         }
         clear(disp, region);
@@ -91,8 +93,10 @@ namespace graphics {
     const uint8_t SPINNER_ANIM_Y[] = {0, 0, 1, 2, 3, 4, 4, 4, 3, 2, 1, 0};
     constexpr uint8_t SPINNER_ANIM_LEN = sizeof(SPINNER_ANIM_X);
 
-    bool Spinner::update() {
-        unsigned long t = millis();
+    bool Spinner::update(unsigned long t) {
+        if (!t) {
+            t = millis();
+        }
         if (t - last_update > SPIN_DELAY) {
             last_update += SPIN_DELAY * ((t - last_update) / SPIN_DELAY);
             state ++;
@@ -104,11 +108,11 @@ namespace graphics {
         return false;
     }
 
-    bool Spinner::draw(display::Display &disp) {
-        if (!update()) {
+    bool Spinner::draw(display::Display &disp, unsigned long t) {
+        if (!update(t)) {
             return false;
         }
-        clear(disp, {x, x + 5, y, y + 5});
+        clear(disp, {x, static_cast<int16_t>(x + 5), y, static_cast<int16_t>(y + 5)});
         SPINNER.draw_P(disp, x, y);
         disp.clear_pixel(x + SPINNER_ANIM_X[state], y + SPINNER_ANIM_Y[state]);
         return true;

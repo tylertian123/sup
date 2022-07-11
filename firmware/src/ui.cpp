@@ -15,8 +15,10 @@ namespace ui {
         down = !digitalRead(pin);
     }
 
-    void Button::poll() {
-        unsigned long t = millis();
+    void Button::poll(unsigned long t) {
+        if (!t) {
+            t = millis();
+        }
         bool state = !digitalRead(pin);
         // Check for button being held
         // Require button being previously down and a certain amount of time before last state change
@@ -66,8 +68,10 @@ namespace ui {
         blink_duration = duration;
     }
 
-    void LED::poll() {
-        unsigned long t = millis();
+    void LED::poll(unsigned long t) {
+        if (!t) {
+            t = millis();
+        }
         if (blink_duration) {
             // Check for state change
             if (t - last_change >= blink_duration) {
@@ -136,13 +140,14 @@ namespace ui {
     }
 
     void poll() {
+        unsigned long t = millis();
         if (!has_data) {
             // Note disp_update is not cleared before poll
             // This allows it to be used as an update flag
-            disp_update = top_text.draw(disp) || disp_update;
-            disp_update = bottom_text.draw(disp) || disp_update;
+            disp_update = top_text.draw(disp, t) || disp_update;
+            disp_update = bottom_text.draw(disp, t) || disp_update;
             if (icon_type == IconType::SPINNER) {
-                disp_update = spinner.draw(disp) || disp_update;
+                disp_update = spinner.draw(disp, t) || disp_update;
             }
             if (disp_update) {
                 disp.update();
@@ -150,10 +155,10 @@ namespace ui {
             }
         }
             
-        input1.poll();
-        input2.poll();
-        status_led.poll();
-        error_led.poll();
+        input1.poll(t);
+        input2.poll(t);
+        status_led.poll(t);
+        error_led.poll(t);
 
         // Exit sleep mode on any input
         if (sleep && (input1.pressed || input2.pressed)) {
