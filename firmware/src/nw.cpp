@@ -402,10 +402,15 @@ namespace nw {
             }
         }, [&server]() {
             HTTPUpload &upload = server.upload();
+            graphics::ProgressBar &pbar = ui::progress_bar(true);
             // Start OTA update
             if (upload.status == UPLOAD_FILE_START) {
                 // Stop mDNS since UDP takes priority over TCP
                 WiFiUDP::stopAll();
+                ui::set_icon(ui::IconType::SPINNER);
+                ui::set_text("0%", nullptr);
+                pbar.set_max_progress(upload.contentLength);
+                pbar.set_progress(0);
                 DEBUG_OUT_FP(PSTR("Webserver OTA update: %s\n"), upload.filename.c_str());
                 if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
                     Update.printError(Serial);
@@ -414,6 +419,13 @@ namespace nw {
             else if (upload.status == UPLOAD_FILE_WRITE && Update.isRunning()) {
                 if (Update.write(upload.buf, upload.currentSize) == upload.currentSize) {
                     DEBUG_OUT_FP(PSTR("Wrote %u bytes (total %u bytes)\n"), upload.currentSize, upload.totalSize);
+                    pbar.set_progress(upload.totalSize);
+                    
+                    char str[10];
+                    sprintf(str, "%d%%", 100 * upload.totalSize / upload.contentLength);
+                    ui::set_text(str, nullptr);
+
+                    ui::progress_bar(true);
                 }
                 else {
                     Update.printError(Serial);
@@ -422,6 +434,10 @@ namespace nw {
             else if (upload.status == UPLOAD_FILE_END && Update.isRunning()) {
                 if (Update.end(true)) {
                     DEBUG_OUT_FP(PSTR("Update success (total size %u)\n"), upload.totalSize);
+
+                    ui::set_text("100%", nullptr);
+                    pbar.set_progress(upload.contentLength);
+                    ui::progress_bar(true);
                 }
                 else {
                     Update.printError(Serial);

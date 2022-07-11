@@ -73,10 +73,10 @@ namespace graphics {
             return false;
         }
         clear(disp, region);
-        draw_str(disp, str.c_str(), x - scroll_offset, y, region);
+        draw_str(disp, str.c_str(), region.min_x - scroll_offset, region.min_y, region);
         // Draw second part if if it's on screen
-        if (scroll && x - scroll_offset + text_width + EMPTY_SPACE < region.max_x) {
-            draw_str(disp, str.c_str(), x - scroll_offset + text_width + EMPTY_SPACE, y, region);
+        if (scroll && region.min_x - scroll_offset + text_width + EMPTY_SPACE < region.max_x) {
+            draw_str(disp, str.c_str(), region.min_x - scroll_offset + text_width + EMPTY_SPACE, region.min_y, region);
         }
         return true;
     }
@@ -116,6 +116,33 @@ namespace graphics {
         SPINNER.draw_P(disp, x, y);
         disp.clear_pixel(x + SPINNER_ANIM_X[state], y + SPINNER_ANIM_Y[state]);
         return true;
+    }
+
+    void ProgressBar::set_max_progress(uint32_t max) {
+        this->max = max;
+    }
+
+    void ProgressBar::set_progress(uint32_t p) {
+        progress = (region.max_x - region.min_x) * p / max;
+    }
+
+    void ProgressBar::draw(display::Display &disp) {
+        clear(disp, region);
+        // Box
+        for (uint16_t x = region.min_x; x < region.max_x; x ++) {
+            disp.set_pixel(x, region.min_y);
+            disp.set_pixel(x, region.max_y - 1);
+        }
+        for (uint16_t y = region.min_y; y < region.max_y; y ++) {
+            disp.set_pixel(region.min_x, y);
+            disp.set_pixel(region.max_x - 1, y);
+        }
+        // Bar
+        for (uint16_t x = 1; x < progress; x ++) {
+            for (int16_t y = region.min_y + 1; y < region.max_y - 1; y ++) {
+                disp.set_pixel(region.min_x + x, y);
+            }
+        }
     }
 
     void clear(display::Display &disp, Region region) {

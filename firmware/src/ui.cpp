@@ -100,7 +100,9 @@ namespace ui {
     graphics::ScrollingText bottom_text(0, 8, 32, 5);
     IconType icon_type = IconType::SPINNER;
     graphics::Spinner spinner(0, 1);
+    graphics::ProgressBar pbar(0, 9, 32, 6);
     bool disp_update = false;
+    bool use_progress_bar = false;
 
     bool has_data = false;
     uint8_t disp_brightness = 0;
@@ -141,16 +143,31 @@ namespace ui {
         }
     }
 
+    graphics::ProgressBar& progress_bar(bool use) {
+        if (use != use_progress_bar) {
+            use_progress_bar = use;
+            disp.clear_buf();
+        }
+        disp_update = true;
+        return pbar;
+    }
+
     void poll() {
         unsigned long t = millis();
         if (!has_data) {
             // Note disp_update is not cleared before poll
             // This allows it to be used as an update flag
             disp_update = top_text.draw(disp, t) || disp_update;
-            disp_update = bottom_text.draw(disp, t) || disp_update;
+            if (use_progress_bar) {
+                pbar.draw(disp);
+            }
+            else {
+                disp_update = bottom_text.draw(disp, t) || disp_update;
+            }
             if (icon_type == IconType::SPINNER) {
                 disp_update = spinner.draw(disp, t) || disp_update;
             }
+
             if (disp_update) {
                 disp.update();
                 disp_update = false;

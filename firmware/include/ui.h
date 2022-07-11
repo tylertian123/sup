@@ -62,5 +62,6 @@ namespace ui {
     void init();
     void set_text(const char *top, const char *bottom);
     void set_icon(IconType type);
+    graphics::ProgressBar& progress_bar(bool use);
     void poll();
 }

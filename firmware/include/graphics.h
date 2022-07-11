@@ -46,7 +46,6 @@ namespace graphics {
         static constexpr unsigned int SCROLL_DELAY = 50;
         static constexpr uint16_t EMPTY_SPACE = 8;
 
-        int16_t x, y;
         Region region;
         
         String str;
@@ -58,7 +57,7 @@ namespace graphics {
 
     public:
         ScrollingText(int16_t x, int16_t y, uint16_t width, uint16_t height)
-            : x(x), y(y), region{x, static_cast<int16_t>(x + width), y, static_cast<int16_t>(y + height)} {}
+            : region{x, static_cast<int16_t>(x + width), y, static_cast<int16_t>(y + height)} {}
         void set_str(const char *str);
         bool update(unsigned long t = 0);
         bool draw(display::Display &disp, unsigned long t = 0);
@@ -76,6 +75,20 @@ namespace graphics {
         Spinner(int16_t x, int16_t y) : x(x), y(y) {};
         bool update(unsigned long t = 0);
         bool draw(display::Display &disp, unsigned long t = 0);
+    };
+
+    class ProgressBar {
+    private:
+        uint32_t max = 0;
+        uint8_t progress = 0;
+        Region region;
+    
+    public:
+        ProgressBar(int16_t x, int16_t y, uint16_t width, uint16_t height)
+            : region{x, static_cast<int16_t>(x + width), y, static_cast<int16_t>(y + height)} {}
+        void set_max_progress(uint32_t max);
+        void set_progress(uint32_t p);
+        void draw(display::Display &disp);
     };
 
     const Glyph& map_char(char c);

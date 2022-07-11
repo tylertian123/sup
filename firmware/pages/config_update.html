@@ -9,10 +9,15 @@
 <body>
     <h1>Upload New Firmware</h1>
     Upload the new firmware here as a .bin file.
-    <form method="post" action="/update" enctype="multipart/form-data">
+    <form method="post" action="/update" enctype="multipart/form-data" id="update-form">
         <input type="file" name="firmware" required><br>
         <input type="submit" value="Upload">
     </form>
+    <script>
+        document.getElementById("update-form").addEventListener("submit", () => {
+            alert("Uploading firmware. Please do not close or reload the page.");
+        });
+    </script>
 </body>
 
 </html>
