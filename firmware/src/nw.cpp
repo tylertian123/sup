@@ -363,7 +363,8 @@ namespace nw {
             }
             else {
                 server.send(200, "text/plain", "OK");
-                ESP.restart();
+                // Restart after 1s, outside the server handler, so the response gets sent
+                ui::restart_at = millis() + 1000;
             }
         }, [&server]() {
             HTTPUpload &upload = server.upload();
@@ -391,6 +392,9 @@ namespace nw {
                 else {
                     Update.printError(Serial);
                 }
+            }
+            else if (upload.status == UPLOAD_FILE_ABORTED) {
+                DEBUG_OUT_LN(F("Update aborted!"));
             }
             yield();
         });

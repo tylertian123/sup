@@ -106,6 +106,8 @@ namespace ui {
     uint8_t disp_brightness = 0;
     bool sleep = false;
 
+    unsigned long restart_at = 0;
+
     void init() {
         // Init display first because SPI init changes the pin mode for some pins
         disp.init();
@@ -141,6 +143,11 @@ namespace ui {
 
     void poll() {
         unsigned long t = millis();
+        
+        if (restart_at && t > restart_at) {
+            ESP.restart();
+        }
+
         if (!has_data) {
             // Note disp_update is not cleared before poll
             // This allows it to be used as an update flag
