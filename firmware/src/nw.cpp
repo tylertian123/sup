@@ -39,6 +39,7 @@ namespace nw {
 
     int connect_status = WL_DISCONNECTED;
     String input_ssid, input_password;
+    unsigned long restart_at = 0;
 
     void enterprise_connect(const char *ssid, const char *username, const char *identity, const char *password) {
         disable_extra4k_at_link_time();
@@ -167,6 +168,9 @@ namespace nw {
                 while (connect_status != -1) {
                     MDNS.update();
                     server.handleClient();
+                    if (restart_at && millis() > restart_at) {
+                        ESP.restart();
+                    }
                 }
             }
             // This delay seems to be necessary, otherwise the last page will time out
@@ -219,7 +223,7 @@ namespace nw {
             server.send(301, "text/plain", "");
         });
         server.on("/stylesheet.css", HTTP_GET, [&server]() {
-            server.send_P(200, "text/css", PSTR(PAGE_CONTENT_STYLESHEET_CSS));
+            server.send_P(200, PSTR("text/css"), PSTR(PAGE_CONTENT_STYLESHEET_CSS));
         });
         // For debug
         server.on("/status", HTTP_GET, [&server]() {
@@ -229,7 +233,7 @@ namespace nw {
         });
         // Main configuration UI
         server.on("/config", HTTP_GET, [&server]() {
-            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_CONFIG_HTML));
+            server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_CONFIG_HTML));
         });
         server.on("/config-db", HTTP_GET, [&server]() {
             constexpr size_t buf_size = 1024;
@@ -290,7 +294,7 @@ namespace nw {
             delete[] buf;
         });
         server.on("/config-update", HTTP_GET, [&server]() {
-            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_CONFIG_UPDATE_HTML));
+            server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_CONFIG_UPDATE_HTML));
         });
         // Config backend
         server.on("/wifi-connect", HTTP_POST, [&server]() {
@@ -305,13 +309,13 @@ namespace nw {
                 config::global_config.ent_enabled = false;
                 config::save_config();
             }
-            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_WIFI_SUCCESS_HTML));
+            server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_WIFI_SUCCESS_HTML));
             // Set this to indicate that we should reconnect now
             connect_status = -1;
         });
         server.on("/wifi-connect-enterprise", HTTP_POST, [&server]() {
             if (!(server.hasArg("ssid") && server.hasArg("username") && server.hasArg("password"))) {
-                server.send(400, "text/plain", "Bad Request");
+                server.send_P(400, PSTR("text/plain"), PSTR("Bad Request"));
                 return;
             }
             strncpy(config::global_config.ent_ssid, server.arg("ssid").c_str(), 32);
@@ -319,12 +323,12 @@ namespace nw {
             strncpy(config::global_config.ent_password, server.arg("password").c_str(), 64);
             config::global_config.ent_enabled = true;
             config::save_config();
-            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_WIFI_SUCCESS_HTML));
+            server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_WIFI_SUCCESS_HTML));
             connect_status = -1;
         });
         server.on("/wifi-country-config", HTTP_POST, [&server]() {
             if (!(server.hasArg("code") && server.hasArg("nchan"))) {
-                server.send(400, "text/plain", "Bad Request");
+                server.send_P(400, PSTR("text/plain"), PSTR("Bad Request"));
                 return;
             }
             const char *ccode = server.arg("code").c_str();
@@ -332,11 +336,11 @@ namespace nw {
             config::global_config.wifi_ccode[1] = ccode[1];
             config::global_config.wifi_nchan = atoi(server.arg("nchan").c_str());
             config::save_config();
-            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_SUCCESS_HTML));
+            server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_SUCCESS_HTML));
         });
         server.on("/db-credentials", HTTP_POST, [&server]() {
             if (!(server.hasArg("email") && server.hasArg("password") && server.hasArg("location"))) {
-                server.send(400, "text/plain", "Bad Request");
+                server.send_P(400, PSTR("text/plain"), PSTR("Bad Request"));
                 return;
             }
             strncpy(config::global_config.db_auth_email, server.arg("email").c_str(), 64);
@@ -347,24 +351,54 @@ namespace nw {
         });
         server.on("/ap-setup", HTTP_POST, [&server]() {
             if (!(server.hasArg("ssid") && server.hasArg("password"))) {
-                server.send(400, "text/plain", "Bad Request");
+                server.send_P(400, PSTR("text/plain"), PSTR("Bad Request"));
                 return;
             }
             strncpy(config::global_config.ap_ssid, server.arg("ssid").c_str(), 32);
             strncpy(config::global_config.ap_password, server.arg("password").c_str(), 32);
             config::save_config();
-            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_SUCCESS_HTML));
+            server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_SUCCESS_HTML));
         });
         // https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266WebServer/examples/WebUpdate/WebUpdate.ino
         server.on("/update", HTTP_POST, [&server]() {
             server.sendHeader("Connection", "close");
             if (Update.hasError()) {
-                server.send(200, "text/plain", "Error!");
+                const char *err;
+                switch (Update.getError()) {
+                case UPDATE_ERROR_WRITE:
+                    err = PSTR("Update failed: Flash Write Failed");
+                case UPDATE_ERROR_ERASE:
+                    err = PSTR("Update failed: Flash Erase Failed");
+                case UPDATE_ERROR_READ:
+                    err = PSTR("Update failed: Flash Read Failed");
+                case UPDATE_ERROR_SPACE:
+                    err = PSTR("Update failed: Not Enough Space");
+                case UPDATE_ERROR_SIZE:
+                    err = PSTR("Update failed: Bad Size Given");
+                case UPDATE_ERROR_STREAM:
+                    err = PSTR("Update failed: Stream Read Timeout");
+                case UPDATE_ERROR_NO_DATA:
+                    err = PSTR("Update failed: No data supplied");
+                case UPDATE_ERROR_MD5:
+                    err = PSTR("Update failed: MD5 hash of firmware does not match");
+                case UPDATE_ERROR_SIGN:
+                    err = PSTR("Update failed: Signature verification failed");
+                case UPDATE_ERROR_FLASH_CONFIG:
+                    err = PSTR("Update failed: Flash config wrong");
+                case UPDATE_ERROR_NEW_FLASH_CONFIG:
+                    err = PSTR("Update failed: New flash config wrong");
+                case UPDATE_ERROR_MAGIC_BYTE:
+                    err = PSTR("Update failed: Magic byte is wrong, not 0xE9");
+                case UPDATE_ERROR_BOOTSTRAP:
+                    err = PSTR("Update failed: Invalid bootstrapping state, reset ESP8266 before updating");
+                default:
+                    err = PSTR("Update failed: Unknown error");
+                }
+                server.send_P(200, PSTR("text/plain"), err);
             }
             else {
-                server.send(200, "text/plain", "OK");
-                // Restart after 1s, outside the server handler, so the response gets sent
-                ui::restart_at = millis() + 1000;
+                server.send_P(200, PSTR("text/html"), PAGE_CONTENT_UPDATE_SUCCESS_HTML);
+                restart_at = millis() + 1000;
             }
         }, [&server]() {
             HTTPUpload &upload = server.upload();

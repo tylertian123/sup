@@ -55,10 +55,6 @@ namespace ui {
     extern Button input1, input2;
     extern LED status_led, error_led;
 
-    // When millis() exceeds this number (if nonzero), a restart is performed
-    // used for OTA updates
-    extern unsigned long restart_at;
-
     enum class IconType {
         SPINNER, ERROR
     };
