@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Firmware Update</title>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css">
+</head>
+
+<body>
+    <h1>Upload New Firmware</h1>
+    Upload the new firmware here as a .bin file.
+    <form method="post" action="/update" enctype="multipart/form-data">
+        <input type="file" name="firmware" required><br>
+        <input type="submit" value="Upload">
+    </form>
+</body>
+
+</html>

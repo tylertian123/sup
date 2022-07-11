@@ -289,6 +289,9 @@ namespace nw {
             server.send(200, "text/html", buf);
             delete[] buf;
         });
+        server.on("/config-update", HTTP_GET, [&server]() {
+            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_CONFIG_UPDATE_HTML));
+        });
         // Config backend
         server.on("/wifi-connect", HTTP_POST, [&server]() {
             if (!server.hasArg("ssid")) {
@@ -351,6 +354,45 @@ namespace nw {
             strncpy(config::global_config.ap_password, server.arg("password").c_str(), 32);
             config::save_config();
             server.send_P(200, "text/html", PSTR(PAGE_CONTENT_SUCCESS_HTML));
+        });
+        // https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266WebServer/examples/WebUpdate/WebUpdate.ino
+        server.on("/update", HTTP_POST, [&server]() {
+            server.sendHeader("Connection", "close");
+            if (Update.hasError()) {
+                server.send(200, "text/plain", "Error!");
+            }
+            else {
+                server.send(200, "text/plain", "OK");
+                ESP.restart();
+            }
+        }, [&server]() {
+            HTTPUpload &upload = server.upload();
+            // Start OTA update
+            if (upload.status == UPLOAD_FILE_START) {
+                // Stop mDNS since UDP takes priority over TCP
+                WiFiUDP::stopAll();
+                DEBUG_OUT_FP(PSTR("Webserver OTA update: %s\n"), upload.filename.c_str());
+                if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
+                    Update.printError(Serial);
+                }
+            }
+            else if (upload.status == UPLOAD_FILE_WRITE && Update.isRunning()) {
+                if (Update.write(upload.buf, upload.currentSize) == upload.currentSize) {
+                    DEBUG_OUT_FP(PSTR("Wrote %u bytes (total %u bytes)\n"), upload.currentSize, upload.totalSize);
+                }
+                else {
+                    Update.printError(Serial);
+                }
+            }
+            else if (upload.status == UPLOAD_FILE_END && Update.isRunning()) {
+                if (Update.end(true)) {
+                    DEBUG_OUT_FP(PSTR("Update success (total size %u)\n"), upload.totalSize);
+                }
+                else {
+                    Update.printError(Serial);
+                }
+            }
+            yield();
         });
     }
 }
