@@ -14,8 +14,11 @@
         <input type="submit" value="Upload">
     </form>
     <script>
-        document.getElementById("update-form").addEventListener("submit", () => {
-            alert("Uploading firmware. Please do not close or reload the page.");
+        document.getElementById("update-form").addEventListener("submit", (event) => {
+            if (!confirm("Press ok to begin firmware update.\n\nPlease do not close or refresh the page and keep the device powered for the entire update.")) {
+                // Cancel submit if not confirmed
+                event.preventDefault();
+            }
         });
     </script>
 </body>
