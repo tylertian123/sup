@@ -4,6 +4,8 @@
 #include "wiring.h"
 #include "graphics.h"
 
+#include <stdint.h>
+
 namespace ui {
 
     class Button {
@@ -56,8 +58,11 @@ namespace ui {
     extern LED status_led, error_led;
     extern graphics::ProgressBar progress_bar;
 
-    enum class LayoutType {
-        LOADING_TEXT, LOADING_PROGRESS_BAR, ERROR_TEXT
+    enum class LayoutType : uint8_t {
+        TEXT = 0,
+        LOADING_TEXT,
+        LOADING_PROGRESS_BAR,
+        ERROR_TEXT,
     };
 
     void init();

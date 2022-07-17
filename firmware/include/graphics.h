@@ -51,6 +51,7 @@ namespace graphics {
         char text[64] = {0};
         uint16_t text_width = 0;
         bool scroll = false;
+        bool updated = true;
 
         unsigned long last_update = 0;
         int16_t scroll_offset = 0;
@@ -58,6 +59,7 @@ namespace graphics {
     public:
         ScrollingText(int16_t x, int16_t y, uint16_t width, uint16_t height)
             : region{x, static_cast<int16_t>(x + width), y, static_cast<int16_t>(y + height)} {}
+        void set_position(int16_t x, int16_t y, uint16_t width, uint16_t height);
         void set_str(const char *str);
         bool update(unsigned long t);
         bool draw(display::Display &disp, unsigned long t, bool force = false);

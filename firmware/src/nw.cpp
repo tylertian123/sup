@@ -425,7 +425,7 @@ namespace nw {
                 if (Update.write(upload.buf, upload.currentSize) == upload.currentSize) {
                     DEBUG_OUT_FP(PSTR("Wrote %u bytes (total %u bytes)\n"), upload.currentSize, upload.totalSize);
                     ui::progress_bar.set_progress(upload.totalSize);
-                    
+                    // Display % done indicator
                     char str[10];
                     sprintf(str, "%d%%", 100 * upload.totalSize / upload.contentLength);
                     ui::set_text(str, nullptr);
@@ -438,8 +438,10 @@ namespace nw {
                 if (Update.end(true)) {
                     DEBUG_OUT_FP(PSTR("Update success (total size %u)\n"), upload.totalSize);
 
-                    ui::set_text("100%", nullptr);
-                    ui::progress_bar.set_progress(upload.contentLength);
+                    // Set layout first to update position and width of object
+                    // So the text can fit without scrolling
+                    ui::set_layout(ui::LayoutType::TEXT);
+                    ui::set_text("Please", "wait");
                 }
                 else {
                     Update.printError(Serial);

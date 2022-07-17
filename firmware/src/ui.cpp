@@ -129,8 +129,16 @@ namespace ui {
         }
     }
 
-
     // If init is true, then the function should initialize the layout, i.e. redraw everything
+    bool draw_layout_text(unsigned long t, bool init = false) {
+        // This layout changes the position of the top text
+        // Other layouts do not change it back; this layout is intended for use before a reboot for OTA updates
+        if (init) {
+            top_text.set_position(0, 1, 32, 5);
+        }
+        return top_text.draw(disp, t, init) | bottom_text.draw(disp, t, init);
+    }
+
     bool draw_layout_loading_text(unsigned long t, bool init = false) {
         // Use bitwise OR to avoid short circuit so all 3 are always drawn
         return top_text.draw(disp, t, init) | bottom_text.draw(disp, t, init) | spinner.draw(disp, t, init);
@@ -143,7 +151,6 @@ namespace ui {
     bool draw_layout_error_text(unsigned long t, bool init = false) {
         if (init) {
             // Draw the exclamation mark a single time
-            graphics::clear(disp, {0, 5, 1, 6});
             uint8_t data[16];
             graphics::Glyph glyph(graphics::map_char('!'), data);
             glyph.draw(disp, (5 - glyph.width) / 2, (5 - glyph.height) / 2 + 1);
@@ -152,6 +159,13 @@ namespace ui {
         return top_text.draw(disp, t, init) | bottom_text.draw(disp, t, init);
     }
 
+    bool (* const LAYOUT_HANDLERS[]) (unsigned long t, bool init) = {
+        draw_layout_text,
+        draw_layout_loading_text,
+        draw_layout_loading_progress_bar,
+        draw_layout_error_text
+    };
+
     void set_layout(LayoutType type) {
         layout = type;
         // Clear the screen buffer to redraw
@@ -159,38 +173,14 @@ namespace ui {
         redraw = true;
         unsigned long t = millis();
         // Call the correct init function
-        switch (layout) {
-        case LayoutType::LOADING_TEXT:
-            redraw = draw_layout_loading_text(t, true);
-            break;
-        case LayoutType::LOADING_PROGRESS_BAR:
-            redraw = draw_layout_loading_progress_bar(t, true);
-            break;
-        case LayoutType::ERROR_TEXT:
-            redraw = draw_layout_error_text(t, true);
-            break;
-        default:
-            break;
-        }
+        LAYOUT_HANDLERS[static_cast<uint8_t>(layout)](t, true);
     }
 
     void poll() {
         unsigned long t = millis();
         if (!has_data) {
             // Draw the correct layout
-            switch (layout) {
-            case LayoutType::LOADING_TEXT:
-                redraw = draw_layout_loading_text(t);
-                break;
-            case LayoutType::LOADING_PROGRESS_BAR:
-                redraw = draw_layout_loading_progress_bar(t);
-                break;
-            case LayoutType::ERROR_TEXT:
-                redraw = draw_layout_error_text(t);
-                break;
-            default:
-                break;
-            }
+            redraw = LAYOUT_HANDLERS[static_cast<uint8_t>(layout)](t, false) || redraw;
             if (redraw) {
                 disp.update();
                 redraw = false;

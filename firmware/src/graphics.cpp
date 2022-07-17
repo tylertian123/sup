@@ -40,6 +40,16 @@ namespace graphics {
         }
     }
 
+    void ScrollingText::set_position(int16_t x, int16_t y, uint16_t width, uint16_t height) {
+        region = {
+            .min_x = x,
+            .max_x = static_cast<int16_t>(x + width),
+            .min_y = y,
+            .max_y = static_cast<int16_t>(y + height)
+        };
+        updated = true;
+    }
+
     void ScrollingText::set_str(const char *str) {
         strncpy(text, str, sizeof(text));
         // Recompute text width
@@ -47,6 +57,7 @@ namespace graphics {
         scroll = region.min_x + text_width >= region.max_x;
         // Reset scrolling parameters
         scroll_offset = -1;
+        updated = true;
     }
     
     bool ScrollingText::update(unsigned long t) {
@@ -65,7 +76,7 @@ namespace graphics {
             }
             return true;
         }
-        return false;
+        return updated;
     }
 
     bool ScrollingText::draw(display::Display &disp, unsigned long t, bool force) {
@@ -78,6 +89,7 @@ namespace graphics {
         if (scroll && region.min_x - scroll_offset + text_width + EMPTY_SPACE < region.max_x) {
             draw_str(disp, text, region.min_x - scroll_offset + text_width + EMPTY_SPACE, region.min_y, region);
         }
+        updated = false;
         return true;
     }
 
