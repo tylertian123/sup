@@ -48,7 +48,7 @@ namespace graphics {
 
         Region region;
         
-        String str;
+        char text[64] = {0};
         uint16_t text_width = 0;
         bool scroll = false;
 

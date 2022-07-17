@@ -38,7 +38,7 @@ namespace nw {
     const IPAddress ip_subnet(255, 255, 255, 0);
 
     int connect_status = WL_DISCONNECTED;
-    String input_ssid, input_password;
+    char input_ssid[32], input_password[64];
     unsigned long restart_at = 0;
 
     void enterprise_connect(const char *ssid, const char *username, const char *identity, const char *password) {
@@ -118,12 +118,15 @@ namespace nw {
         if (use_saved) {
             
             if (config::global_config.ent_enabled) {
-                DEBUG_OUT_LN(F("Connecting to saved WPA2-Enterprise"));
+                DEBUG_OUT_FP(PSTR("Connecting to saved WPA2-Enterprise (SSID: %s)\n"), config::global_config.ent_ssid);
                 enterprise_connect(config::global_config.ent_ssid, config::global_config.ent_username,
                     config::global_config.ent_username, config::global_config.ent_password);
             }
             else {
-                DEBUG_OUT_LN(F("Connecting to saved WPA2-PSK"));
+                station_config conf;
+                memset(&conf, 0, sizeof(conf));
+                wifi_station_get_config_default(&conf);
+                DEBUG_OUT_FP(PSTR("Connecting to saved WPA2-PSK (SSID: %s)\n"), conf.ssid);
                 WiFi.begin();
             }
             set_country();
@@ -180,7 +183,7 @@ namespace nw {
             // Try connecting here
             if (!config::global_config.ent_enabled) {
                 DEBUG_OUT_FP(PSTR("(WPA2-PSK) Connecting to SSID: %s, password: %s\n"), 
-                    input_ssid.c_str(), input_password.c_str());
+                    input_ssid, input_password);
                 // Temporarily turn on persistent mode so the new SSID/password gets saved
                 WiFi.persistent(true);
                 WiFi.begin(input_ssid, input_password);
@@ -299,11 +302,11 @@ namespace nw {
         // Config backend
         server.on("/wifi-connect", HTTP_POST, [&server]() {
             if (!server.hasArg("ssid")) {
-                server.send(400, "text/plain", "Bad Request");
+                server.send_P(400, PSTR("text/plain"), PSTR("Bad Request"));
                 return;
             }
-            input_ssid = server.arg("ssid");
-            input_password = server.hasArg("password") ? server.arg("password") : "";
+            strncpy(input_ssid, server.arg("ssid").c_str(), sizeof(input_ssid));
+            strncpy(input_password, server.hasArg("password") ? server.arg("password").c_str() : "", sizeof(input_password));
             // Disable enterprise wifi if it's not already disabled
             if (config::global_config.ent_enabled) {
                 config::global_config.ent_enabled = false;

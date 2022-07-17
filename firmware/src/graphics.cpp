@@ -41,7 +41,7 @@ namespace graphics {
     }
 
     void ScrollingText::set_str(const char *str) {
-        this->str = str;
+        strncpy(text, str, sizeof(text));
         // Recompute text width
         text_width = str_width(str);
         scroll = region.min_x + text_width >= region.max_x;
@@ -73,10 +73,10 @@ namespace graphics {
             return false;
         }
         clear(disp, region);
-        draw_str(disp, str.c_str(), region.min_x - scroll_offset, region.min_y, region);
+        draw_str(disp, text, region.min_x - scroll_offset, region.min_y, region);
         // Draw second part if if it's on screen
         if (scroll && region.min_x - scroll_offset + text_width + EMPTY_SPACE < region.max_x) {
-            draw_str(disp, str.c_str(), region.min_x - scroll_offset + text_width + EMPTY_SPACE, region.min_y, region);
+            draw_str(disp, text, region.min_x - scroll_offset + text_width + EMPTY_SPACE, region.min_y, region);
         }
         return true;
     }
