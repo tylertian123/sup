@@ -92,23 +92,21 @@ namespace ui {
         }
     }
 
+    LayoutType layout = LayoutType::LOADING_TEXT;
+
     display::Display disp;
     Button input1(INPUT_BTN1), input2(INPUT_BTN2);
     LED status_led(STATUS_LED), error_led(ERROR_LED);
 
     graphics::ScrollingText top_text(6, 1, 26, 5);
     graphics::ScrollingText bottom_text(0, 8, 32, 5);
-    IconType icon_type = IconType::SPINNER;
     graphics::Spinner spinner(0, 1);
-    graphics::ProgressBar pbar(0, 9, 32, 6);
-    bool disp_update = false;
-    bool use_progress_bar = false;
+    graphics::ProgressBar progress_bar(0, 9, 32, 6);
+    bool redraw = false;
 
     bool has_data = false;
     uint8_t disp_brightness = 0;
     bool sleep = false;
-
-    unsigned long restart_at = 0;
 
     void init() {
         // Init display first because SPI init changes the pin mode for some pins
@@ -118,8 +116,8 @@ namespace ui {
         status_led.init();
         error_led.init();
         pinMode(STATUS_LED, OUTPUT);
+        set_layout(LayoutType::LOADING_TEXT);
         set_text("Init", "Please wait");
-        disp_update = true;
     }
 
     void set_text(const char *top, const char *bottom) {
@@ -131,46 +129,71 @@ namespace ui {
         }
     }
 
-    void set_icon(IconType type) {
-        icon_type = type;
-        if (type == IconType::ERROR) {
+
+    // If init is true, then the function should initialize the layout, i.e. redraw everything
+    bool draw_layout_loading_text(unsigned long t, bool init = false) {
+        // Use bitwise OR to avoid short circuit so all 3 are always drawn
+        return top_text.draw(disp, t, init) | bottom_text.draw(disp, t, init) | spinner.draw(disp, t, init);
+    }
+    
+    bool draw_layout_loading_progress_bar(unsigned long t, bool init = false) {
+        return top_text.draw(disp, t, init) | progress_bar.draw(disp, init) | spinner.draw(disp, t, init);
+    }
+
+    bool draw_layout_error_text(unsigned long t, bool init = false) {
+        if (init) {
+            // Draw the exclamation mark a single time
             graphics::clear(disp, {0, 5, 1, 6});
             uint8_t data[16];
             graphics::Glyph glyph(graphics::map_char('!'), data);
             glyph.draw(disp, (5 - glyph.width) / 2, (5 - glyph.height) / 2 + 1);
-            // Update a single time to draw the updated icon
-            disp_update = true;
+            redraw = true;
         }
+        return top_text.draw(disp, t, init) | bottom_text.draw(disp, t, init);
     }
 
-    graphics::ProgressBar& progress_bar(bool use) {
-        if (use != use_progress_bar) {
-            use_progress_bar = use;
-            disp.clear_buf();
+    void set_layout(LayoutType type) {
+        layout = type;
+        // Clear the screen buffer to redraw
+        disp.clear_buf();
+        redraw = true;
+        unsigned long t = millis();
+        // Call the correct init function
+        switch (layout) {
+        case LayoutType::LOADING_TEXT:
+            redraw = draw_layout_loading_text(t, true);
+            break;
+        case LayoutType::LOADING_PROGRESS_BAR:
+            redraw = draw_layout_loading_progress_bar(t, true);
+            break;
+        case LayoutType::ERROR_TEXT:
+            redraw = draw_layout_error_text(t, true);
+            break;
+        default:
+            break;
         }
-        disp_update = true;
-        return pbar;
     }
 
     void poll() {
         unsigned long t = millis();
         if (!has_data) {
-            // Note disp_update is not cleared before poll
-            // This allows it to be used as an update flag
-            disp_update = top_text.draw(disp, t) || disp_update;
-            if (use_progress_bar) {
-                pbar.draw(disp);
+            // Draw the correct layout
+            switch (layout) {
+            case LayoutType::LOADING_TEXT:
+                redraw = draw_layout_loading_text(t);
+                break;
+            case LayoutType::LOADING_PROGRESS_BAR:
+                redraw = draw_layout_loading_progress_bar(t);
+                break;
+            case LayoutType::ERROR_TEXT:
+                redraw = draw_layout_error_text(t);
+                break;
+            default:
+                break;
             }
-            else {
-                disp_update = bottom_text.draw(disp, t) || disp_update;
-            }
-            if (icon_type == IconType::SPINNER) {
-                disp_update = spinner.draw(disp, t) || disp_update;
-            }
-
-            if (disp_update) {
+            if (redraw) {
                 disp.update();
-                disp_update = false;
+                redraw = false;
             }
         }
             

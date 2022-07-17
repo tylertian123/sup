@@ -68,8 +68,8 @@ namespace graphics {
         return false;
     }
 
-    bool ScrollingText::draw(display::Display &disp, unsigned long t) {
-        if (!update(t)) {
+    bool ScrollingText::draw(display::Display &disp, unsigned long t, bool force) {
+        if (!force && !update(t)) {
             return false;
         }
         clear(disp, region);
@@ -108,8 +108,8 @@ namespace graphics {
         return false;
     }
 
-    bool Spinner::draw(display::Display &disp, unsigned long t) {
-        if (!update(t)) {
+    bool Spinner::draw(display::Display &disp, unsigned long t, bool force) {
+        if (!force && !update(t)) {
             return false;
         }
         clear(disp, {x, static_cast<int16_t>(x + 5), y, static_cast<int16_t>(y + 5)});
@@ -120,13 +120,18 @@ namespace graphics {
 
     void ProgressBar::set_max_progress(uint32_t max) {
         this->max = max;
+        updated = true;
     }
 
     void ProgressBar::set_progress(uint32_t p) {
         progress = (region.max_x - region.min_x) * p / max;
+        updated = true;
     }
 
-    void ProgressBar::draw(display::Display &disp) {
+    bool ProgressBar::draw(display::Display &disp, bool force) {
+        if (!force && !updated) {
+            return false;
+        }
         clear(disp, region);
         // Box
         for (uint16_t x = region.min_x; x < region.max_x; x ++) {
@@ -143,6 +148,7 @@ namespace graphics {
                 disp.set_pixel(region.min_x + x, y);
             }
         }
+        return true;
     }
 
     void clear(display::Display &disp, Region region) {

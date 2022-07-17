@@ -59,8 +59,8 @@ namespace graphics {
         ScrollingText(int16_t x, int16_t y, uint16_t width, uint16_t height)
             : region{x, static_cast<int16_t>(x + width), y, static_cast<int16_t>(y + height)} {}
         void set_str(const char *str);
-        bool update(unsigned long t = 0);
-        bool draw(display::Display &disp, unsigned long t = 0);
+        bool update(unsigned long t);
+        bool draw(display::Display &disp, unsigned long t, bool force = false);
     };
 
     class Spinner {
@@ -73,8 +73,8 @@ namespace graphics {
     
     public:
         Spinner(int16_t x, int16_t y) : x(x), y(y) {};
-        bool update(unsigned long t = 0);
-        bool draw(display::Display &disp, unsigned long t = 0);
+        bool update(unsigned long t);
+        bool draw(display::Display &disp, unsigned long t, bool force = false);
     };
 
     class ProgressBar {
@@ -82,13 +82,14 @@ namespace graphics {
         uint32_t max = 0;
         uint8_t progress = 0;
         Region region;
+        bool updated = true;
     
     public:
         ProgressBar(int16_t x, int16_t y, uint16_t width, uint16_t height)
             : region{x, static_cast<int16_t>(x + width), y, static_cast<int16_t>(y + height)} {}
         void set_max_progress(uint32_t max);
         void set_progress(uint32_t p);
-        void draw(display::Display &disp);
+        bool draw(display::Display &disp, bool force = false);
     };
 
     const Glyph& map_char(char c);

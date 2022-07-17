@@ -131,7 +131,7 @@ namespace nw {
             }
             set_country();
 
-            ui::set_icon(ui::IconType::SPINNER);
+            ui::set_layout(ui::LayoutType::LOADING_TEXT);
             ui::set_text("WiFi", "Connecting");
             ui::status_led.blink(400);
             connect_status = WiFi.waitForConnectResult();
@@ -153,7 +153,7 @@ namespace nw {
 
         // In case of failure, run the access point + config server
         while (connect_status != WL_CONNECTED) {
-            ui::set_icon(ui::IconType::ERROR);
+            ui::set_layout(ui::LayoutType::ERROR_TEXT);
             ui::set_text(connect_status == -2 ? "Config Mode" : "WiFi Error", "Use web config");
             ui::status_led.set(true);
 
@@ -201,7 +201,7 @@ namespace nw {
                 //     config::global_config.ent_username, config::global_config.ent_password);
             }
             // Wait for connection while flashing
-            ui::set_icon(ui::IconType::SPINNER);
+            ui::set_layout(ui::LayoutType::LOADING_TEXT);
             ui::set_text("WiFi", "Connecting");
             ui::status_led.blink(400);
             if ((connect_status = WiFi.waitForConnectResult()) != WL_CONNECTED) {
@@ -405,15 +405,17 @@ namespace nw {
             }
         }, [&server]() {
             HTTPUpload &upload = server.upload();
-            graphics::ProgressBar &pbar = ui::progress_bar(true);
             // Start OTA update
             if (upload.status == UPLOAD_FILE_START) {
                 // Stop mDNS since UDP takes priority over TCP
                 WiFiUDP::stopAll();
-                ui::set_icon(ui::IconType::SPINNER);
+
+                // Init UI layout
                 ui::set_text("0%", nullptr);
-                pbar.set_max_progress(upload.contentLength);
-                pbar.set_progress(0);
+                ui::progress_bar.set_max_progress(upload.contentLength);
+                ui::progress_bar.set_progress(0);
+                ui::set_layout(ui::LayoutType::LOADING_PROGRESS_BAR);
+
                 DEBUG_OUT_FP(PSTR("Webserver OTA update: %s\n"), upload.filename.c_str());
                 if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
                     Update.printError(Serial);
@@ -422,13 +424,11 @@ namespace nw {
             else if (upload.status == UPLOAD_FILE_WRITE && Update.isRunning()) {
                 if (Update.write(upload.buf, upload.currentSize) == upload.currentSize) {
                     DEBUG_OUT_FP(PSTR("Wrote %u bytes (total %u bytes)\n"), upload.currentSize, upload.totalSize);
-                    pbar.set_progress(upload.totalSize);
+                    ui::progress_bar.set_progress(upload.totalSize);
                     
                     char str[10];
                     sprintf(str, "%d%%", 100 * upload.totalSize / upload.contentLength);
                     ui::set_text(str, nullptr);
-
-                    ui::progress_bar(true);
                 }
                 else {
                     Update.printError(Serial);
@@ -439,8 +439,7 @@ namespace nw {
                     DEBUG_OUT_FP(PSTR("Update success (total size %u)\n"), upload.totalSize);
 
                     ui::set_text("100%", nullptr);
-                    pbar.set_progress(upload.contentLength);
-                    ui::progress_bar(true);
+                    ui::progress_bar.set_progress(upload.contentLength);
                 }
                 else {
                     Update.printError(Serial);

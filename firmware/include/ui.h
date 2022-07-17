@@ -54,14 +54,14 @@ namespace ui {
     extern display::Display disp;
     extern Button input1, input2;
     extern LED status_led, error_led;
+    extern graphics::ProgressBar progress_bar;
 
-    enum class IconType {
-        SPINNER, ERROR
+    enum class LayoutType {
+        LOADING_TEXT, LOADING_PROGRESS_BAR, ERROR_TEXT
     };
 
     void init();
     void set_text(const char *top, const char *bottom);
-    void set_icon(IconType type);
-    graphics::ProgressBar& progress_bar(bool use);
+    void set_layout(LayoutType type);
     void poll();
 }

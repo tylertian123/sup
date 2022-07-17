@@ -58,7 +58,7 @@ void setup() {
     if(!fb::init()) {
         DEBUG_OUT_LN(F("Failed to connect to Firebase!"));
         ui::set_text(nullptr, "Connection error");
-        ui::set_icon(ui::IconType::ERROR);
+        ui::set_layout(ui::LayoutType::ERROR_TEXT);
         ui::error_led.set(true);
     }
     else {
@@ -67,7 +67,7 @@ void setup() {
         if (!fb::start_stream()) {
             DEBUG_OUT_LN(F("Failed to start stream!"));
             ui::set_text(nullptr, "Stream error");
-            ui::set_icon(ui::IconType::ERROR);
+            ui::set_layout(ui::LayoutType::ERROR_TEXT);
             ui::error_led.set(true);
         }
         else {
