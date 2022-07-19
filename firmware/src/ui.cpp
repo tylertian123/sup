@@ -58,6 +58,10 @@ namespace ui {
         digitalWrite(pin, !state);
     }
 
+    bool LED::blinking() {
+        return blink_duration;
+    }
+
     void LED::blink(uint16_t duration, uint16_t times) {
         // Don't change if busy
         if (blink_duration) {
@@ -107,6 +111,9 @@ namespace ui {
     bool has_data = false;
     uint8_t disp_brightness = 0;
     bool sleep = false;
+    unsigned long last_disp_reset = 0;
+
+    uint8_t reset_counter = 0;
 
     void init() {
         // Init display first because SPI init changes the pin mode for some pins
@@ -178,6 +185,17 @@ namespace ui {
 
     void poll() {
         unsigned long t = millis();
+        // Reset display every 2s
+        if (t - last_disp_reset > 2000) {
+            last_disp_reset = t;
+            for (uint8_t i = 0; i < disp.mod_height; i ++) {
+                disp.rows[i].init(disp_brightness);
+                disp.rows[i].init(disp_brightness);
+                disp.rows[i].init(disp_brightness);
+                disp.rows[i].clear();
+            }
+            disp.update();
+        }
         if (!has_data) {
             // Draw the correct layout
             redraw = LAYOUT_HANDLERS[static_cast<uint8_t>(layout)](t, false) || redraw;
@@ -215,23 +233,29 @@ namespace ui {
             }
             disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, disp_brightness);
         }
-        // Holding down both buttons for 3s does a soft reset
-        if (input1.held && input2.held && input1.held_duration > 3000 && input2.held_duration > 3000) {
-            ESP.restart();
-        }
-        // Re-init the displays
-        if (input1.held && !input2.down) {
-            input1.held = false;
-            for (uint8_t i = 0; i < disp.mod_height; i ++) {
-                disp.rows[i].init();
-                disp.rows[i].init();
-                disp.rows[i].init();
-                disp.rows[i].clear();
+        // Soft reset
+        if (input1.held) {
+            if (input1.down) {
+                // Blink both LEDs a number of times before reset
+                if (!error_led.blinking()) {
+                    reset_counter++;
+                    // For some reason the reset only happens after the button is released
+                    // Totally a feature, not a bug
+                    if (reset_counter > 5) {
+                        ESP.restart();
+                    }
+                    else {
+                        error_led.blink(100, 1);
+                    }
+                }
             }
-            disp.update();
-            disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, disp_brightness);
-            status_led.blink(25, 1);
+            // Clear the held flag once the button is released
+            else {
+                input1.held = false;
+                reset_counter = 0;
+            }
         }
+        // Sleep mode
         if (input2.held && !input1.down) {
             input2.held = false;
             sleep = true;

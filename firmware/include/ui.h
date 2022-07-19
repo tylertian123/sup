@@ -49,6 +49,7 @@ namespace ui {
         LED(uint8_t pin) : pin(pin) {}
         void init(bool state = false);
         void set(bool state);
+        bool blinking();
         void blink(uint16_t duration, uint16_t times = INDEFINITE);
         void poll(unsigned long t = 0);
     };

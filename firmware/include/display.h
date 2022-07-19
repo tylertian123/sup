@@ -52,7 +52,7 @@ namespace display {
         }
 
         // Configure all displays
-        void init() {
+        void init(uint8_t intensity = 0) {
             // Turn off display test mode
             fill_cmd(DISP_TEST, 0);
             update();
@@ -63,7 +63,7 @@ namespace display {
             fill_cmd(DECODE_MODE, 0);
             update();
             // Min intensity
-            fill_cmd(INTENSITY, 0);
+            fill_cmd(INTENSITY, intensity);
             update();
             // Turn screen on
             fill_cmd(SHUTDOWN, 1);
@@ -116,13 +116,13 @@ namespace display {
         MAX7219Group() : rows{Pins...}, disp_buf{} {}
 
         // Initialize I/O, turn on and clear all displays.
-        void init() {
+        void init(uint8_t intensity = 0) {
             for (uint8_t i = 0; i < Height; i ++) {
                 rows[i].init_io();
                 // Extra redundancy in init sequence
-                rows[i].init();
-                rows[i].init();
-                rows[i].init();
+                rows[i].init(intensity);
+                rows[i].init(intensity);
+                rows[i].init(intensity);
                 rows[i].clear();
             }
         }

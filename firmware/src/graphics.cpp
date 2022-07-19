@@ -9,6 +9,50 @@
 namespace graphics {
     constexpr uint16_t GLYPH_BUF_SIZE = 64;
 
+    void clear(display::Display &disp, Region region) {
+        region.constrain_to_screen();
+        // Some clever bitwise trickery would make this much faster
+        // but CPU time is quite cheap right now
+        for (uint8_t y = region.min_y; y < region.max_y; y ++) {
+            for (uint8_t x = region.min_x; x < region.max_x; x ++) {
+                disp.clear_pixel(x, y);
+            }
+        }
+    }
+
+    void draw_str(display::Display &disp, const char *str, int16_t x, int16_t y, Region r) {
+        if (y >= r.max_y) {
+            return;
+        }
+        for (; *str; str ++) {
+            uint8_t data[GLYPH_BUF_SIZE];
+            // Make an instance in RAM
+            Glyph glyph(map_char(*str), data);
+            if (x + glyph.width < 0 || y + glyph.height < 0) {
+                x += glyph.width + 1;
+                continue;
+            }
+
+            glyph.draw(disp, x, y, r);
+            x += glyph.width + 1;
+            if (x >= r.max_x) {
+                return;
+            }
+        }
+    }
+
+    uint16_t str_width(const char *str) {
+        // To make an empty string have width 0
+        uint16_t w = str ? 1 : 0;
+        for (; *str; str++) {
+            Glyph glyph;
+            memcpy_P(&glyph, &map_char(*str), sizeof(graphics::Glyph));
+            w += glyph.width + 1;
+        }
+        // -1 for the extra spacing of the last character
+        return w - 1;
+    }
+
     void Region::constrain_to_screen() {
         min_x = std::max<int16_t>(0, min_x);
         min_y = std::max<int16_t>(0, min_y);
@@ -146,49 +190,5 @@ namespace graphics {
         SPINNER.draw_P(disp, region.min_x, region.min_y);
         disp.clear_pixel(region.min_x + SPINNER_ANIM_X[state], region.min_y + SPINNER_ANIM_Y[state]);
         return true;
-    }
-
-    void clear(display::Display &disp, Region region) {
-        region.constrain_to_screen();
-        // Some clever bitwise trickery would make this much faster
-        // but CPU time is quite cheap right now
-        for (uint8_t y = region.min_y; y < region.max_y; y ++) {
-            for (uint8_t x = region.min_x; x < region.max_x; x ++) {
-                disp.clear_pixel(x, y);
-            }
-        }
-    }
-
-    void draw_str(display::Display &disp, const char *str, int16_t x, int16_t y, Region r) {
-        if (y >= r.max_y) {
-            return;
-        }
-        for (; *str; str ++) {
-            uint8_t data[GLYPH_BUF_SIZE];
-            // Make an instance in RAM
-            Glyph glyph(map_char(*str), data);
-            if (x + glyph.width < 0 || y + glyph.height < 0) {
-                x += glyph.width + 1;
-                continue;
-            }
-
-            glyph.draw(disp, x, y, r);
-            x += glyph.width + 1;
-            if (x >= r.max_x) {
-                return;
-            }
-        }
-    }
-
-    uint16_t str_width(const char *str) {
-        // To make an empty string have width 0
-        uint16_t w = str ? 1 : 0;
-        for (; *str; str++) {
-            Glyph glyph;
-            memcpy_P(&glyph, &map_char(*str), sizeof(graphics::Glyph));
-            w += glyph.width + 1;
-        }
-        // -1 for the extra spacing of the last character
-        return w - 1;
     }
 }

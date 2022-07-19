@@ -47,10 +47,10 @@ void setup() {
         ui::error_led.blink(400, 1);
     }
 
-    if (ui::input1.down) {
+    if (ui::input2.down) {
         DEBUG_OUT_LN(F("Forcing AP mode"));
     }
-    nw::wifi_connect(!ui::input1.down);
+    nw::wifi_connect(!ui::input2.down);
 
     DEBUG_OUT_FP(PSTR("Local IP address: %s\n"), WiFi.localIP().toString().c_str());
 
