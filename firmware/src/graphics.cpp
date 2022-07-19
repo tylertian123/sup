@@ -40,7 +40,7 @@ namespace graphics {
         }
     }
 
-    void ScrollingText::set_position(int16_t x, int16_t y, uint16_t width, uint16_t height) {
+    void DisplayElement::set_position(int16_t x, int16_t y, uint16_t width, uint16_t height) {
         region = {
             .min_x = x,
             .max_x = static_cast<int16_t>(x + width),
@@ -50,84 +50,13 @@ namespace graphics {
         updated = true;
     }
 
-    void ScrollingText::set_str(const char *str) {
-        strncpy(text, str, sizeof(text));
-        // Recompute text width
-        text_width = str_width(str);
-        scroll = region.min_x + text_width >= region.max_x;
-        // Reset scrolling parameters
-        scroll_offset = -1;
+    bool DisplayElement::draw(display::Display &disp, bool force) {
+        // Check that the element needs to be redrawn
+        if (!force && !updated) {
+            return false;
+        }
         updated = true;
-    }
-    
-    bool ScrollingText::update(unsigned long t) {
-        if (!t) {
-            t = millis();
-        }
-        // Scroll by 1 pixel if scroll delay time reached
-        if (t - last_update > SCROLL_DELAY) {
-            last_update += SCROLL_DELAY * ((t - last_update) / SCROLL_DELAY);
-            if (scroll) {
-                scroll_offset ++;
-                // Wrap around
-                if (scroll_offset >= text_width + EMPTY_SPACE) {
-                    scroll_offset = 0;
-                }
-            }
-            return true;
-        }
-        return updated;
-    }
-
-    bool ScrollingText::draw(display::Display &disp, unsigned long t, bool force) {
-        if (!force && !update(t)) {
-            return false;
-        }
-        clear(disp, region);
-        draw_str(disp, text, region.min_x - scroll_offset, region.min_y, region);
-        // Draw second part if if it's on screen
-        if (scroll && region.min_x - scroll_offset + text_width + EMPTY_SPACE < region.max_x) {
-            draw_str(disp, text, region.min_x - scroll_offset + text_width + EMPTY_SPACE, region.min_y, region);
-        }
-        updated = false;
-        return true;
-    }
-
-    const PROGMEM uint8_t SPINNER_DATA[] = {
-        _PAD(0b01110),
-        _PAD(0b10001),
-        _PAD(0b10001),
-        _PAD(0b10001),
-        _PAD(0b01110),
-    };
-    const PROGMEM Glyph SPINNER(SPINNER_DATA, 5, 5);
-    const uint8_t SPINNER_ANIM_X[] = {2, 3, 4, 4, 4, 3, 2, 1, 0, 0, 0, 1};
-    const uint8_t SPINNER_ANIM_Y[] = {0, 0, 1, 2, 3, 4, 4, 4, 3, 2, 1, 0};
-    constexpr uint8_t SPINNER_ANIM_LEN = sizeof(SPINNER_ANIM_X);
-
-    bool Spinner::update(unsigned long t) {
-        if (!t) {
-            t = millis();
-        }
-        if (t - last_update > SPIN_DELAY) {
-            last_update += SPIN_DELAY * ((t - last_update) / SPIN_DELAY);
-            state ++;
-            if (state >= SPINNER_ANIM_LEN) {
-                state = 0;
-            }
-            return true;
-        }
-        return false;
-    }
-
-    bool Spinner::draw(display::Display &disp, unsigned long t, bool force) {
-        if (!force && !update(t)) {
-            return false;
-        }
-        clear(disp, {x, static_cast<int16_t>(x + 5), y, static_cast<int16_t>(y + 5)});
-        SPINNER.draw_P(disp, x, y);
-        disp.clear_pixel(x + SPINNER_ANIM_X[state], y + SPINNER_ANIM_Y[state]);
-        return true;
+        return _draw(disp);
     }
 
     void ProgressBar::set_max_progress(uint32_t max) {
@@ -140,10 +69,7 @@ namespace graphics {
         updated = true;
     }
 
-    bool ProgressBar::draw(display::Display &disp, bool force) {
-        if (!force && !updated) {
-            return false;
-        }
+    bool ProgressBar::_draw(display::Display &disp) {
         clear(disp, region);
         // Box
         for (uint16_t x = region.min_x; x < region.max_x; x ++) {
@@ -160,6 +86,65 @@ namespace graphics {
                 disp.set_pixel(region.min_x + x, y);
             }
         }
+        return true;
+    }
+
+    void ScrollingText::set_str(const char *str) {
+        strncpy(text, str, sizeof(text));
+        // Recompute text width
+        text_width = str_width(str);
+        scroll = region.min_x + text_width >= region.max_x;
+        // Reset scrolling parameters
+        scroll_offset = -1;
+        updated = true;
+    }
+    
+    bool ScrollingText::_update() {
+        if (scroll) {
+            scroll_offset ++;
+            // Wrap around
+            if (scroll_offset >= text_width + EMPTY_SPACE) {
+                scroll_offset = 0;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    bool ScrollingText::_draw(display::Display &disp) {
+        clear(disp, region);
+        draw_str(disp, text, region.min_x - scroll_offset, region.min_y, region);
+        // Draw second part if if it's on screen
+        if (scroll && region.min_x - scroll_offset + text_width + EMPTY_SPACE < region.max_x) {
+            draw_str(disp, text, region.min_x - scroll_offset + text_width + EMPTY_SPACE, region.min_y, region);
+        }
+        return true;
+    }
+
+    const PROGMEM uint8_t SPINNER_DATA[] = {
+        _PAD(0b01110),
+        _PAD(0b10001),
+        _PAD(0b10001),
+        _PAD(0b10001),
+        _PAD(0b01110),
+    };
+    const PROGMEM Glyph SPINNER(SPINNER_DATA, 5, 5);
+    const uint8_t SPINNER_ANIM_X[] = {2, 3, 4, 4, 4, 3, 2, 1, 0, 0, 0, 1};
+    const uint8_t SPINNER_ANIM_Y[] = {0, 0, 1, 2, 3, 4, 4, 4, 3, 2, 1, 0};
+    constexpr uint8_t SPINNER_ANIM_LEN = sizeof(SPINNER_ANIM_X);
+
+    bool Spinner::_update() {
+        state ++;
+        if (state >= SPINNER_ANIM_LEN) {
+            state = 0;
+        }
+        return true;
+    }
+
+    bool Spinner::_draw(display::Display &disp) {
+        clear(disp, region);
+        SPINNER.draw_P(disp, region.min_x, region.min_y);
+        disp.clear_pixel(region.min_x + SPINNER_ANIM_X[state], region.min_y + SPINNER_ANIM_Y[state]);
         return true;
     }
 

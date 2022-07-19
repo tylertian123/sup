@@ -41,57 +41,104 @@ namespace graphics {
         void draw_P(display::Display &disp, int16_t x, int16_t y, Region region = FULL_SCREEN) const;
     };
 
-    class ScrollingText {
-    private:
-        static constexpr unsigned int SCROLL_DELAY = 50;
-        static constexpr uint16_t EMPTY_SPACE = 8;
-
+    // Base display element class
+    class DisplayElement {
+    protected:
         Region region;
+        bool updated = true;
+
+        // Override this to draw the element onto the screen
+        // Only called when an update is needed
+        virtual bool _draw(display::Display &disp) = 0;
+
+    public:
+        DisplayElement(int16_t x, int16_t y, uint16_t width, uint16_t height)
+            : region{x, static_cast<int16_t>(x + width), y, static_cast<int16_t>(y + height)} {}
+        void set_position(int16_t x, int16_t y, uint16_t width, uint16_t height);
+        virtual bool draw(display::Display &disp, bool force = false);
+    };
+
+    class ProgressBar : public DisplayElement {
+    private:
+        uint32_t max = 0;
+        uint8_t progress = 0;
+
+    protected:
+        virtual bool _draw(display::Display &disp) override;
+    
+    public:
+        using DisplayElement::DisplayElement;
+        // Set how much progress is out of
+        void set_max_progress(uint32_t max);
+        // Set the current progress (out of the max progress)
+        void set_progress(uint32_t p);
+    };
+
+    // Base animated display element class
+    template <uint16_t FrameDelay>
+    class AnimatedElement : public DisplayElement {
+    protected:
+        unsigned long last_update = 0;
+
+        // Override this to implement state update logic for each frame
+        virtual bool _update() = 0;
+    
+    public:
+        static constexpr uint16_t FRAME_DELAY = FrameDelay;
+    
+        using DisplayElement::DisplayElement;
+
+        virtual bool update(unsigned long t) {
+            // Update if required time has passed
+            if (t - last_update > FRAME_DELAY) {
+                last_update += FRAME_DELAY * ((t - last_update) / FRAME_DELAY);
+                return _update();
+            }
+            // Otherwise return whether a static update has occurred
+            return updated;
+        }
+
+        virtual bool draw(display::Display &disp, bool force = false) override {
+            return draw(disp, millis(), force);
+        }
+
+        virtual bool draw(display::Display &disp, unsigned long t, bool force = false) {
+            if (!force && !update(t)) {
+                return false;
+            }
+            updated = true;
+            return _draw(disp);
+        }
+    };
+
+    class ScrollingText : public AnimatedElement<50> {
+    private:
+        static constexpr uint16_t EMPTY_SPACE = 8;
         
         char text[64] = {0};
         uint16_t text_width = 0;
         bool scroll = false;
-        bool updated = true;
-
-        unsigned long last_update = 0;
         int16_t scroll_offset = 0;
+    
+    protected:
+        virtual bool _update() override;
+        virtual bool _draw(display::Display &disp) override;
 
     public:
-        ScrollingText(int16_t x, int16_t y, uint16_t width, uint16_t height)
-            : region{x, static_cast<int16_t>(x + width), y, static_cast<int16_t>(y + height)} {}
-        void set_position(int16_t x, int16_t y, uint16_t width, uint16_t height);
+        using AnimatedElement::AnimatedElement;
         void set_str(const char *str);
-        bool update(unsigned long t);
-        bool draw(display::Display &disp, unsigned long t, bool force = false);
     };
 
-    class Spinner {
+    class Spinner : public AnimatedElement<75> {
     private:
-        static constexpr unsigned int SPIN_DELAY = 75;
-        int16_t x, y;
-
-        unsigned long last_update = 0;
         uint8_t state = 0;
-    
-    public:
-        Spinner(int16_t x, int16_t y) : x(x), y(y) {};
-        bool update(unsigned long t);
-        bool draw(display::Display &disp, unsigned long t, bool force = false);
-    };
 
-    class ProgressBar {
-    private:
-        uint32_t max = 0;
-        uint8_t progress = 0;
-        Region region;
-        bool updated = true;
+    protected:
+        virtual bool _update() override;
+        virtual bool _draw(display::Display &disp) override;
     
     public:
-        ProgressBar(int16_t x, int16_t y, uint16_t width, uint16_t height)
-            : region{x, static_cast<int16_t>(x + width), y, static_cast<int16_t>(y + height)} {}
-        void set_max_progress(uint32_t max);
-        void set_progress(uint32_t p);
-        bool draw(display::Display &disp, bool force = false);
+        Spinner(int16_t x, int16_t y) : AnimatedElement(x, y, 5, 5) {};
     };
 
     const Glyph& map_char(char c);
