@@ -339,7 +339,7 @@ namespace nw {
             config::global_config.wifi_ccode[1] = ccode[1];
             config::global_config.wifi_nchan = atoi(server.arg("nchan").c_str());
             config::save_config();
-            server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_SUCCESS_HTML));
+            server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_CONFIG_SUCCESS_HTML));
         });
         server.on("/db-credentials", HTTP_POST, [&server]() {
             if (!(server.hasArg("email") && server.hasArg("password") && server.hasArg("location"))) {
@@ -350,7 +350,7 @@ namespace nw {
             strncpy(config::global_config.db_auth_password, server.arg("password").c_str(), 32);
             strncpy(config::global_config.db_data_location, server.arg("location").c_str(), 32);
             config::save_config();
-            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_SUCCESS_HTML));
+            server.send_P(200, "text/html", PSTR(PAGE_CONTENT_CONFIG_SUCCESS_HTML));
         });
         server.on("/ap-setup", HTTP_POST, [&server]() {
             if (!(server.hasArg("ssid") && server.hasArg("password"))) {
@@ -360,7 +360,11 @@ namespace nw {
             strncpy(config::global_config.ap_ssid, server.arg("ssid").c_str(), 32);
             strncpy(config::global_config.ap_password, server.arg("password").c_str(), 32);
             config::save_config();
-            server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_SUCCESS_HTML));
+            server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_CONFIG_SUCCESS_HTML));
+        });
+        server.on("/reset", HTTP_POST, [&server]() {
+            server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_REBOOT_SUCCESS_HTML));
+            restart_at = millis() + 1000;
         });
         // https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266WebServer/examples/WebUpdate/WebUpdate.ino
         server.on("/update", HTTP_POST, [&server]() {
