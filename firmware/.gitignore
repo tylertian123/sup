@@ -1,6 +1,7 @@
 .pio/
 .vscode/
 compile_commands.json
+service_account_key.json
 
 include/secrets.h
 include/page_content.h

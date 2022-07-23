@@ -23,6 +23,7 @@
 #include "secrets.h"
 
 bool init_success = false;
+unsigned long ota_check_time = 0;
 
 os_timer_t timer;
 
@@ -32,7 +33,9 @@ void timer_cb(void *arg) {
 
 void setup() {
     Serial.begin(115200);
-    DEBUG_OUT_LN(F("Started"));
+    DEBUG_OUT_LN(F("\n\n======= Starting ======="));
+    DEBUG_OUT(F("INFO: Firmware version: "));
+    DEBUG_OUT_LN(FIRMWARE_VER);
 
     ui::init();
     ui::error_led.set(false);
@@ -81,8 +84,17 @@ void setup() {
 void loop() {
     if (init_success) {
         // Make Firebase do its auth thing
-        // Data comes from a stream callback so no need to check this result here
-        Firebase.ready();
+        if (Firebase.ready() && millis() > ota_check_time) {
+            // OTA check every 10 minutes
+            ota_check_time += 1000 * 60 * 10;
+            if (fb::check_ota()) {
+                DEBUG_OUT_LN("OTA updating from Firebase...");
+                if (fb::ota_update()) {
+                    delay(1000);
+                    ESP.restart();
+                }
+            }
+        }
     }
     ui::poll();
 }

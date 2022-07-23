@@ -11,4 +11,6 @@ namespace fb {
 
     bool init();
     bool start_stream();
+    bool check_ota();
+    bool ota_update();
 }
