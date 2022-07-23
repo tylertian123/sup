@@ -21,8 +21,14 @@ credentials = service_account.Credentials.from_service_account_file("service_acc
 
 session = AuthorizedSession(credentials)
 
-if len(sys.argv) > 1:
-    FIRMWARE_PATH = sys.argv[1]
+if len(sys.argv) < 2:
+    print("Error: Must give a version!")
+    sys.exit(1)
+version = sys.argv[1]
+print(f"Firmware version {version}")
+
+if len(sys.argv) > 2:
+    FIRMWARE_PATH = sys.argv[2]
 else:
     FIRMWARE_PATH = ".pio/build/nodemcuv2/firmware.bin"
 
@@ -43,12 +49,15 @@ while True:
     chunks.append("blob,base64," + base64.b64encode(chunk).decode("ascii"))
 
 data = {
-    "chunkCount": len(chunks),
-    "bin": {str(i): chunks[i] for i in range(len(chunks))}
+    "firmware": {
+        "chunkCount": len(chunks),
+        "bin": {str(i): chunks[i] for i in range(len(chunks))}
+    },
+    "version": version,
 }
 
 print(f"INFO: Total {len(chunks)} chunks ({CHUNK_SIZE} per chunk)")
 
-session.put(DB_URL + "ota/firmware.json", data=json.dumps(data))
+session.patch(DB_URL + "ota.json", data=json.dumps(data))
 
 print("Done")
