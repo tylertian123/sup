@@ -132,7 +132,7 @@ namespace nw {
             set_country();
 
             ui::set_layout(ui::LayoutType::LOADING_TEXT);
-            ui::set_text("WiFi", "Connecting");
+            ui::set_text(F("WiFi"), F("Connecting"));
             ui::status_led.blink(400);
             connect_status = WiFi.waitForConnectResult();
         }
@@ -154,7 +154,7 @@ namespace nw {
         // In case of failure, run the access point + config server
         while (connect_status != WL_CONNECTED) {
             ui::set_layout(ui::LayoutType::ERROR_TEXT);
-            ui::set_text(connect_status == -2 ? "Config Mode" : "WiFi Error", "Use web config");
+            ui::set_text(connect_status == -2 ? F("Config Mode") : F("WiFi Error"), F("Use web config"));
             ui::status_led.set(true);
 
             // Enable access point
@@ -202,7 +202,7 @@ namespace nw {
             }
             // Wait for connection while flashing
             ui::set_layout(ui::LayoutType::LOADING_TEXT);
-            ui::set_text("WiFi", "Connecting");
+            ui::set_text(F("WiFi"), F("Connecting"));
             ui::status_led.blink(400);
             if ((connect_status = WiFi.waitForConnectResult()) != WL_CONNECTED) {
                 DEBUG_OUT_LN(F("Failed to connect!"));
@@ -415,7 +415,7 @@ namespace nw {
                 WiFiUDP::stopAll();
 
                 // Init UI layout
-                ui::set_text("0%", nullptr);
+                ui::set_text(F("0%"), nullptr);
                 ui::progress_bar.set_max_progress(upload.contentLength);
                 ui::progress_bar.set_progress(0);
                 ui::set_layout(ui::LayoutType::LOADING_PROGRESS_BAR);
@@ -445,7 +445,7 @@ namespace nw {
                     // Set layout first to update position and width of object
                     // So the text can fit without scrolling
                     ui::set_layout(ui::LayoutType::TEXT);
-                    ui::set_text("Please", "wait");
+                    ui::set_text(F("Please"), F("wait"));
                 }
                 else {
                     Update.printError(Serial);

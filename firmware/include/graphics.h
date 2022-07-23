@@ -127,6 +127,7 @@ namespace graphics {
     public:
         using AnimatedElement::AnimatedElement;
         void set_str(const char *str);
+        void set_str(const __FlashStringHelper *str);
     };
 
     class Spinner : public AnimatedElement<75> {

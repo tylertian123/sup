@@ -142,6 +142,14 @@ namespace graphics {
         scroll_offset = -1;
         updated = true;
     }
+
+    void ScrollingText::set_str(const __FlashStringHelper *str) {
+        strncpy_P(text, reinterpret_cast<const char *>(str), sizeof(text));
+        text_width = str_width(text);
+        scroll = region.min_x + text_width >= region.max_x;
+        scroll_offset = -1;
+        updated = true;
+    }
     
     bool ScrollingText::_update() {
         if (scroll) {

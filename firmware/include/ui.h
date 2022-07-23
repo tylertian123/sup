@@ -69,6 +69,7 @@ namespace ui {
 
     void init();
     void set_text(const char *top, const char *bottom);
+    void set_text(const __FlashStringHelper *top, const __FlashStringHelper *bottom);
     void set_layout(LayoutType type);
     void poll();
 }

@@ -146,7 +146,7 @@ namespace fb {
             return false;
         }
 
-        ui::set_text("0%", nullptr);
+        ui::set_text(F("0%"), nullptr);
         ui::progress_bar.set_max_progress(chunk_count);
         ui::progress_bar.set_progress(0);
         ui::set_layout(ui::LayoutType::LOADING_PROGRESS_BAR);
@@ -200,7 +200,7 @@ namespace fb {
         // Set layout first to update position and width of object
         // So the text can fit without scrolling
         ui::set_layout(ui::LayoutType::TEXT);
-        ui::set_text("Please", "wait");
+        ui::set_text(F("Please"), F("wait"));
         DEBUG_OUT_LN(F("Update successfully downloaded!"));
         return true;
     }

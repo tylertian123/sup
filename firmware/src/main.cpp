@@ -59,24 +59,24 @@ void setup() {
 
     DEBUG_OUT_FP(PSTR("Local IP address: %s\n"), WiFi.localIP().toString().c_str());
 
-    ui::set_text("DB", "Connecting");
+    ui::set_text(F("DB"), F("Connecting"));
     if(!fb::init()) {
         DEBUG_OUT_LN(F("Failed to connect to Firebase!"));
-        ui::set_text(nullptr, "Connection error");
+        ui::set_text(nullptr, F("Connection error"));
         ui::set_layout(ui::LayoutType::ERROR_TEXT);
         ui::error_led.set(true);
     }
     else {
         DEBUG_OUT_LN(F("Connected to Firebase"));
-        ui::set_text(nullptr, "Starting");
+        ui::set_text(nullptr, F("Starting"));
         if (!fb::start_stream()) {
             DEBUG_OUT_LN(F("Failed to start stream!"));
-            ui::set_text(nullptr, "Stream error");
+            ui::set_text(nullptr, F("Stream error"));
             ui::set_layout(ui::LayoutType::ERROR_TEXT);
             ui::error_led.set(true);
         }
         else {
-            ui::set_text(nullptr, "Waiting for data");
+            ui::set_text(nullptr, F("Waiting for data"));
             DEBUG_OUT_LN(F("Stream started"));
             init_success = true;
         }
@@ -90,13 +90,13 @@ void loop() {
             // OTA check every 10 minutes
             ota_check_time += 1000 * 60 * 10;
             if (fb::check_ota()) {
-                DEBUG_OUT_LN("OTA updating from Firebase...");
+                DEBUG_OUT_LN(F("OTA updating from Firebase..."));
                 if (fb::ota_update()) {
                     delay(1000);
                     ESP.restart();
                 }
                 else {
-                    ui::set_text("Error", "Update failed!");
+                    ui::set_text(F("Error"), F("Update failed!"));
                     ui::set_layout(ui::LayoutType::ERROR_TEXT);
                     // TODO: Restart data stream?
                 }

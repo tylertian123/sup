@@ -123,10 +123,19 @@ namespace ui {
         error_led.init();
         pinMode(STATUS_LED, OUTPUT);
         set_layout(LayoutType::LOADING_TEXT);
-        set_text("Starting", FIRMWARE_VER);
+        set_text(F("Starting"), F(FIRMWARE_VER));
     }
 
     void set_text(const char *top, const char *bottom) {
+        if (top) {
+            top_text.set_str(top);
+        }
+        if (bottom) {
+            bottom_text.set_str(bottom);
+        }
+    }
+
+    void set_text(const __FlashStringHelper *top, const __FlashStringHelper *bottom) {
         if (top) {
             top_text.set_str(top);
         }
