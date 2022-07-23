@@ -44,6 +44,8 @@ void setup() {
     os_timer_setfn(&timer, timer_cb, nullptr);
     os_timer_arm(&timer, 10, true);
 
+    delay(1000);
+
     config::init();
     if (!config::load_config()) {
         DEBUG_OUT_LN(F("Failed to load config object, using default values"));
@@ -92,6 +94,11 @@ void loop() {
                 if (fb::ota_update()) {
                     delay(1000);
                     ESP.restart();
+                }
+                else {
+                    ui::set_text("Error", "Update failed!");
+                    ui::set_layout(ui::LayoutType::ERROR_TEXT);
+                    // TODO: Restart data stream?
                 }
             }
         }

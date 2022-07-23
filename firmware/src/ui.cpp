@@ -108,7 +108,6 @@ namespace ui {
     graphics::ProgressBar progress_bar(0, 9, 32, 6);
     bool redraw = false;
 
-    bool has_data = false;
     uint8_t disp_brightness = 0;
     bool sleep = false;
     unsigned long last_disp_reset = 0;
@@ -124,7 +123,7 @@ namespace ui {
         error_led.init();
         pinMode(STATUS_LED, OUTPUT);
         set_layout(LayoutType::LOADING_TEXT);
-        set_text("Init", "Please wait");
+        set_text("Starting", FIRMWARE_VER);
     }
 
     void set_text(const char *top, const char *bottom) {
@@ -175,12 +174,14 @@ namespace ui {
 
     void set_layout(LayoutType type) {
         layout = type;
-        // Clear the screen buffer to redraw
-        disp.clear_buf();
-        redraw = true;
-        unsigned long t = millis();
-        // Call the correct init function
-        LAYOUT_HANDLERS[static_cast<uint8_t>(layout)](t, true);
+        if (type != LayoutType::NORMAL) {
+            // Clear the screen buffer to redraw
+            disp.clear_buf();
+            redraw = true;
+            unsigned long t = millis();
+            // Call the correct init function
+            LAYOUT_HANDLERS[static_cast<uint8_t>(layout)](t, true);
+        }
     }
 
     void poll() {
@@ -196,7 +197,7 @@ namespace ui {
             }
             disp.update();
         }
-        if (!has_data) {
+        if (layout != LayoutType::NORMAL) {
             // Draw the correct layout
             redraw = LAYOUT_HANDLERS[static_cast<uint8_t>(layout)](t, false) || redraw;
             if (redraw) {
@@ -265,7 +266,9 @@ namespace ui {
         // Check for data updates
         if (fb::disp_data_updated) {
             fb::disp_data_updated = false;
-            has_data = true;
+            if (layout != LayoutType::NORMAL) {
+                set_layout(LayoutType::NORMAL);
+            }
             status_led.blink(100, 2);
             memcpy(disp.disp_buf, fb::disp_data, sizeof(disp.disp_buf));
             disp.update();

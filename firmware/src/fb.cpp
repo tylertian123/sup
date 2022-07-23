@@ -3,6 +3,7 @@
 #include "wiring.h"
 #include "secrets.h"
 #include "config.h"
+#include "ui.h"
 
 #include <Firebase_ESP_Client.h>
 #include <stdio.h>
@@ -122,17 +123,18 @@ namespace fb {
             return false;
         }
 
-        if (Firebase.RTDB.endStream(&stream_data)) {
-            DEBUG_OUT_LN(F("Ended display data stream for OTA update"));
-        }
-        else {
-            DEBUG_OUT_LN(F("Error: Can't stop display data stream for OTA update"));
-        }
         
         return true;
     }
 
     bool ota_update() {
+        if (Firebase.RTDB.endStream(&stream_data)) {
+            DEBUG_OUT_LN(F("Ended display data stream for OTA update"));
+        }
+        else {
+            DEBUG_OUT_LN(F("Error: Can't stop display data stream for OTA update (continuing with update)"));
+        }
+
         if (!Firebase.RTDB.getInt(&fbdo, F("/ota/firmware/chunkCount"))) {
             DEBUG_OUT(F("Failed to get new firmware chunk count: "));
             DEBUG_OUT_LN(fbdo.errorReason());
@@ -143,6 +145,11 @@ namespace fb {
             DEBUG_OUT_LN(F("New firmware invalid: chunk count < 1"));
             return false;
         }
+
+        ui::set_text("0%", nullptr);
+        ui::progress_bar.set_max_progress(chunk_count);
+        ui::progress_bar.set_progress(0);
+        ui::set_layout(ui::LayoutType::LOADING_PROGRESS_BAR);
 
         DEBUG_OUT_LN(F("Starting Firebase OTA"));
         if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
@@ -170,9 +177,14 @@ namespace fb {
                 }
             }
             retry_count = 0;
+
             auto *blob = fbdo.to<std::vector<uint8_t>*>();
             if (Update.write(blob->data(), blob->size()) == blob->size()) {
                 DEBUG_OUT_FP(PSTR("Wrote %d bytes (chunk %d/%d)\n"), blob->size(), i + 1, chunk_count);
+                ui::progress_bar.set_progress(i + 1);
+                char str[10];
+                sprintf_P(str, PSTR("%d%%"), 100 * (i + 1) / chunk_count);
+                ui::set_text(str, nullptr);
             }
             else {
                 Update.printError(Serial);
@@ -185,6 +197,10 @@ namespace fb {
             Update.printError(Serial);
             return false;
         }
+        // Set layout first to update position and width of object
+        // So the text can fit without scrolling
+        ui::set_layout(ui::LayoutType::TEXT);
+        ui::set_text("Please", "wait");
         DEBUG_OUT_LN(F("Update successfully downloaded!"));
         return true;
     }

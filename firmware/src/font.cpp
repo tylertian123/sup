@@ -37,6 +37,22 @@ namespace graphics {
         _PAD(0b10011),
     };
 
+    const PROGMEM uint8_t CHAR_DOT_DATA[] = {
+        _PAD(0b0),
+        _PAD(0b0),
+        _PAD(0b0),
+        _PAD(0b0),
+        _PAD(0b1),
+    };
+
+    const PROGMEM uint8_t CHAR_DASH_DATA[] = {
+        _PAD(0b000),
+        _PAD(0b000),
+        _PAD(0b111),
+        _PAD(0b000),
+        _PAD(0b000),
+    };
+
     const PROGMEM uint8_t CHAR_A_DATA[] = {
         _PAD(0b0110),
         _PAD(0b1001),
@@ -329,6 +345,8 @@ namespace graphics {
     const PROGMEM Glyph CHAR_EXMARK(CHAR_EXMARK_DATA, 1, 5);
     const PROGMEM Glyph CHAR_SPACE(CHAR_SPACE_DATA, 1, 5);
     const PROGMEM Glyph CHAR_PERCENT(CHAR_PCT_DATA, 5, 5);
+    const PROGMEM Glyph CHAR_DOT(CHAR_DOT_DATA, 1, 5);
+    const PROGMEM Glyph CHAR_DASH(CHAR_DASH_DATA, 3, 5);
     
     const PROGMEM Glyph UPPERCASE_CHARS[] = {
         Glyph(CHAR_A_DATA, 4, 5),
@@ -390,6 +408,8 @@ namespace graphics {
             return CHAR_EXMARK;
         case '%':
             return CHAR_PERCENT;
+        case '.':
+            return CHAR_DOT;
         case '?':
         default:
             return CHAR_QMARK;

@@ -431,7 +431,7 @@ namespace nw {
                     ui::progress_bar.set_progress(upload.totalSize);
                     // Display % done indicator
                     char str[10];
-                    sprintf(str, "%d%%", 100 * upload.totalSize / upload.contentLength);
+                    sprintf_P(str, PSTR("%d%%"), 100 * upload.totalSize / upload.contentLength);
                     ui::set_text(str, nullptr);
                 }
                 else {

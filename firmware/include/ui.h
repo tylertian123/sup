@@ -59,7 +59,8 @@ namespace ui {
     extern LED status_led, error_led;
     extern graphics::ProgressBar progress_bar;
 
-    enum class LayoutType : uint8_t {
+    enum class LayoutType : int8_t {
+        NORMAL = -1,
         TEXT = 0,
         LOADING_TEXT,
         LOADING_PROGRESS_BAR,
