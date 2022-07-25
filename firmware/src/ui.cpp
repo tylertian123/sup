@@ -19,29 +19,32 @@ namespace ui {
         if (!t) {
             t = millis();
         }
-        bool state = !digitalRead(pin);
-        // Check for button being held
-        // Require button being previously down and a certain amount of time before last state change
-        if (down && state && !in_hold && t - last_change > HOLD_DELAY) {
-            held = true;
-            in_hold = true;
-        }
         if (in_hold) {
             held_duration = t - last_change;
         }
-        // Check for a state change with debounce
-        if (state != down && t - last_change > DEBOUNCE_DELAY) {
-            // Check for button being released
-            if (!state) {
-                // Only recognize it if the button is not being held down
-                if (!in_hold) {
-                    pressed = true;
-                }
-                in_hold = false;
-                held_duration = 0;
+        // Debounce
+        if (t - last_change > DEBOUNCE_DELAY) {
+            bool state = !digitalRead(pin);
+            // Check for button being held
+            // Require button being previously down and a certain amount of time before last state change
+            if (down && state && !in_hold && t - last_change > HOLD_DELAY) {
+                held = true;
+                in_hold = true;
             }
-            down = state;
-            last_change = t;
+            // Check for a state change
+            if (state != down) {
+                // Check for button being released
+                if (!state) {
+                    // Only recognize it if the button is not being held down
+                    if (!in_hold) {
+                        pressed = true;
+                    }
+                    in_hold = false;
+                    held_duration = 0;
+                }
+                down = state;
+                last_change = t;
+            }
         }
     }
 
@@ -198,13 +201,18 @@ namespace ui {
         // Reset display every 2s
         if (t - last_disp_reset > 2000) {
             last_disp_reset = t;
-            for (uint8_t i = 0; i < disp.mod_height; i ++) {
-                disp.rows[i].init(disp_brightness);
-                disp.rows[i].init(disp_brightness);
-                disp.rows[i].init(disp_brightness);
-                disp.rows[i].clear();
+            if (!sleep) {
+                for (uint8_t i = 0; i < disp.mod_height; i ++) {
+                    disp.rows[i].init(disp_brightness);
+                    disp.rows[i].init(disp_brightness);
+                    disp.rows[i].init(disp_brightness);
+                    disp.rows[i].clear();
+                }
+                disp.update();
             }
-            disp.update();
+            else {
+                disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 0);
+            }
         }
         if (layout != LayoutType::NORMAL) {
             // Draw the correct layout

@@ -10,7 +10,7 @@ namespace ui {
 
     class Button {
     private:
-        static constexpr unsigned int DEBOUNCE_DELAY = 10;
+        static constexpr unsigned int DEBOUNCE_DELAY = 30;
         static constexpr unsigned int HOLD_DELAY = 1000;
         const uint8_t pin;
         unsigned long last_change;
