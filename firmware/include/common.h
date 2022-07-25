@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-#define FIRMWARE_VER "0.1.1"
+#define FIRMWARE_VER "0.1.2"
 
 #define DEBUG_OUT(x) Serial.print(x)
 #define DEBUG_OUT_LN(x) Serial.println(x)

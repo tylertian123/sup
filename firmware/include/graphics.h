@@ -81,7 +81,7 @@ namespace graphics {
         unsigned long last_update = 0;
 
         // Override this to implement state update logic for each frame
-        virtual bool _update() = 0;
+        virtual bool _update(unsigned long t) = 0;
     
     public:
         static constexpr uint16_t FRAME_DELAY = FrameDelay;
@@ -92,7 +92,7 @@ namespace graphics {
             // Update if required time has passed
             if (t - last_update > FRAME_DELAY) {
                 last_update += FRAME_DELAY * ((t - last_update) / FRAME_DELAY);
-                return _update();
+                return _update(t);
             }
             // Otherwise return whether a static update has occurred
             return updated;
@@ -119,9 +119,10 @@ namespace graphics {
         uint16_t text_width = 0;
         bool scroll = false;
         int16_t scroll_offset = 0;
+        unsigned long scroll_start = 0;
     
     protected:
-        virtual bool _update() override;
+        virtual bool _update(unsigned long t) override;
         virtual bool _draw(display::Display &disp) override;
 
     public:
@@ -135,7 +136,7 @@ namespace graphics {
         uint8_t state = 0;
 
     protected:
-        virtual bool _update() override;
+        virtual bool _update(unsigned long t) override;
         virtual bool _draw(display::Display &disp) override;
     
     public:

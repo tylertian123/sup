@@ -147,12 +147,13 @@ namespace graphics {
         strncpy_P(text, reinterpret_cast<const char *>(str), sizeof(text));
         text_width = str_width(text);
         scroll = region.min_x + text_width >= region.max_x;
-        scroll_offset = -1;
+        scroll_offset = 0;
+        scroll_start = millis() + (region.max_x - region.min_x) * 15;
         updated = true;
     }
     
-    bool ScrollingText::_update() {
-        if (scroll) {
+    bool ScrollingText::_update(unsigned long t) {
+        if (scroll && t > scroll_start) {
             scroll_offset ++;
             // Wrap around
             if (scroll_offset >= text_width + EMPTY_SPACE) {
@@ -185,7 +186,7 @@ namespace graphics {
     const uint8_t SPINNER_ANIM_Y[] = {0, 0, 1, 2, 3, 4, 4, 4, 3, 2, 1, 0};
     constexpr uint8_t SPINNER_ANIM_LEN = sizeof(SPINNER_ANIM_X);
 
-    bool Spinner::_update() {
+    bool Spinner::_update(unsigned long t) {
         state ++;
         if (state >= SPINNER_ANIM_LEN) {
             state = 0;
