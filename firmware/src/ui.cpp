@@ -276,9 +276,12 @@ namespace ui {
         // Sleep mode
         if (input2.held && !input1.down) {
             input2.held = false;
-            sleep = true;
-            disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 0);
-            status_led.blink(25, 1);
+            // Sleep mode can only be enabled in normal mode
+            if (layout == LayoutType::NORMAL) {
+                sleep = true;
+                disp.write_all(display::MAX7219<DISP_WIDTH>::SHUTDOWN, 0);
+                status_led.blink(25, 1);
+            }
         }
         // Check for data updates
         if (fb::disp_data_updated) {
