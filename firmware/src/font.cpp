@@ -410,6 +410,8 @@ namespace graphics {
             return CHAR_PERCENT;
         case '.':
             return CHAR_DOT;
+        case '-':
+            return CHAR_DASH;
         case '?':
         default:
             return CHAR_QMARK;
