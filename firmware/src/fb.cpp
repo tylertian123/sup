@@ -95,6 +95,30 @@ namespace fb {
         return true;
     }
 
+    int8_t compare_ver(const char *ver1, const char *ver2) {
+        int maj1 = 0, min1 = 0, rev1 = 0, bld1 = 0;
+        int maj2 = 0, min2 = 0, rev2 = 0, bld2 = 0;
+        sscanf(ver1, "%d.%d.%d-%d", &maj1, &min1, &rev1, &bld1);
+        sscanf(ver2, "%d.%d.%d-%d", &maj2, &min2, &rev2, &bld2);
+        if (maj1 > maj2)
+            return 1;
+        if (maj1 < maj2)
+            return -1;
+        if (min1 > min2)
+            return 1;
+        if (min1 < min2)
+            return -1;
+        if (rev1 > rev2)
+            return 1;
+        if (rev1 < rev2)
+            return -1;
+        if (bld1 > bld2)
+            return 1;
+        if (bld1 < bld2)
+            return -1;
+        return 0;
+    }
+
     bool check_ota() {
         DEBUG_OUT_LN(F("Checking for OTA updates..."));
         if (Firebase.RTDB.getBool(&fbdo, F("/ota/valid"))) {
@@ -110,10 +134,16 @@ namespace fb {
         }
         
         if (Firebase.RTDB.getString(&fbdo, F("/ota/version"))) {
-            if (!strcmp(fbdo.to<const char *>(), FIRMWARE_VER)) {
+            const char *new_ver = fbdo.to<const char *>();
+            if (!strcmp(new_ver, FIRMWARE_VER)) {
                 DEBUG_OUT_LN(F("Firmware version not updated, not updating"));
                 return false;
             }
+            if (compare_ver(new_ver, FIRMWARE_VER) <= 0) {
+                DEBUG_OUT_LN(F("Firmware version is not newer than current, not updating"));
+                return false;
+            }
+
             DEBUG_OUT(F("New firmware verson: "));
             DEBUG_OUT_LN(fbdo.to<const char *>());
         }
