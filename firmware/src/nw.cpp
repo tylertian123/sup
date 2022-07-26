@@ -366,6 +366,14 @@ namespace nw {
             server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_REBOOT_SUCCESS_HTML));
             restart_at = millis() + 1000;
         });
+        server.on("/config-reset", HTTP_POST, [&server]() {
+            config::init_config_object(config::global_config);
+            config::save_config();
+            // The above doesn't erase saved WPA-PSK credentials, but this should clear everything
+            system_restore();
+            server.send_P(200, PSTR("text/html"), PSTR(PAGE_CONTENT_RESET_SUCCESS_HTML));
+            restart_at = millis() + 1000;
+        });
         // https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266WebServer/examples/WebUpdate/WebUpdate.ino
         server.on("/update", HTTP_POST, [&server]() {
             server.sendHeader("Connection", "close");
