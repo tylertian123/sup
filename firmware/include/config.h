@@ -23,6 +23,8 @@ namespace config {
 
         char wifi_ccode[2];
         uint8_t wifi_nchan;
+
+        uint8_t disp_brightness;
     };
 
     extern Config global_config;

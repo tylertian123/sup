@@ -4,6 +4,7 @@
 #include "graphics.h"
 #include "common.h"
 #include "fb.h"
+#include "config.h"
 
 #include <Arduino.h>
 
@@ -111,15 +112,20 @@ namespace ui {
     graphics::ProgressBar progress_bar(0, 9, 32, 6);
     bool redraw = false;
 
-    uint8_t disp_brightness = 0;
     bool sleep = false;
     unsigned long last_disp_reset = 0;
+    unsigned long save_config_at = 0;
 
     uint8_t reset_counter = 0;
 
     void init() {
+        // Sanity check
+        DEBUG_OUT_LN(config::global_config.disp_brightness);
+        if (config::global_config.disp_brightness > 15) {
+            config::global_config.disp_brightness = 0;
+        }
         // Init display first because SPI init changes the pin mode for some pins
-        disp.init();
+        disp.init(config::global_config.disp_brightness);
         input1.init();
         input2.init();
         status_led.init();
@@ -198,14 +204,18 @@ namespace ui {
 
     void poll() {
         unsigned long t = millis();
+        if (save_config_at && t > save_config_at) {
+            save_config_at = 0;
+            config::save_config();
+        }
         // Reset display every 2s
         if (t - last_disp_reset > 2000) {
             last_disp_reset = t;
             if (!sleep) {
                 for (uint8_t i = 0; i < disp.mod_height; i ++) {
-                    disp.rows[i].init(disp_brightness);
-                    disp.rows[i].init(disp_brightness);
-                    disp.rows[i].init(disp_brightness);
+                    disp.rows[i].init(config::global_config.disp_brightness);
+                    disp.rows[i].init(config::global_config.disp_brightness);
+                    disp.rows[i].init(config::global_config.disp_brightness);
                     disp.rows[i].clear();
                 }
                 disp.update();
@@ -238,18 +248,22 @@ namespace ui {
         // Increase brightness
         if (input1.pressed) {
             input1.pressed = false;
-            if (disp_brightness < 15) {
-                disp_brightness ++;
+            DEBUG_OUT_LN(config::global_config.disp_brightness);
+            if (config::global_config.disp_brightness < 15) {
+                config::global_config.disp_brightness ++;
+                save_config_at = t + 3000;
             }
-            disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, disp_brightness);
+            disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, config::global_config.disp_brightness);
         }
         // Decrease brightness
         if (input2.pressed) {
             input2.pressed = false;
-            if (disp_brightness > 0) {
-                disp_brightness --;
+            DEBUG_OUT_LN(config::global_config.disp_brightness);
+            if (config::global_config.disp_brightness > 0) {
+                config::global_config.disp_brightness --;
+                save_config_at = t + 3000;
             }
-            disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, disp_brightness);
+            disp.write_all(display::MAX7219<DISP_WIDTH>::INTENSITY, config::global_config.disp_brightness);
         }
         // Soft reset
         if (input1.held) {

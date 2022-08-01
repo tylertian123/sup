@@ -1,5 +1,6 @@
 #include "config.h"
 #include "secrets.h"
+#include "common.h"
 
 #include <EEPROM.h>
 #include <string.h>
@@ -34,5 +35,6 @@ namespace config {
     void save_config(Config &conf, int addr) {
         EEPROM.put(addr, conf);
         EEPROM.commit();
+        DEBUG_OUT_LN(F("Config saved"));
     }
 }

@@ -37,6 +37,11 @@ void setup() {
     DEBUG_OUT(F("INFO: Firmware version: "));
     DEBUG_OUT_LN(FIRMWARE_VER);
 
+    config::init();
+    if (!config::load_config()) {
+        DEBUG_OUT_LN(F("Failed to load config object, using default values"));
+    }
+
     ui::init();
     ui::error_led.set(false);
     ui::status_led.set(false);
@@ -45,12 +50,6 @@ void setup() {
     os_timer_arm(&timer, 10, true);
 
     delay(1000);
-
-    config::init();
-    if (!config::load_config()) {
-        DEBUG_OUT_LN(F("Failed to load config object, using default values"));
-        ui::error_led.blink(400, 1);
-    }
 
     if (ui::input2.down) {
         DEBUG_OUT_LN(F("Forcing AP mode"));
