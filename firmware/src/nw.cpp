@@ -143,8 +143,9 @@ namespace nw {
             return;
         }
 
+        ui::status_led.set(true);
         if (connect_status > 0) {
-            ui::error_led.blink(200, connect_status);
+            ui::status_led.blink(200, connect_status);
         }
         char status_str[64];
         decode_wifi_status(connect_status, status_str);
@@ -155,7 +156,6 @@ namespace nw {
         while (connect_status != WL_CONNECTED) {
             ui::set_layout(ui::LayoutType::ERROR_TEXT);
             ui::set_text(connect_status == -2 ? F("Config Mode") : F("WiFi Error"), F("Use web config"));
-            ui::status_led.set(true);
 
             // Enable access point
             init_ap();
@@ -207,7 +207,7 @@ namespace nw {
             if ((connect_status = WiFi.waitForConnectResult()) != WL_CONNECTED) {
                 DEBUG_OUT_LN(F("Failed to connect!"));
                 if (connect_status > 0) {
-                    ui::error_led.blink(200, connect_status);
+                    ui::status_led.blink(200, connect_status);
                 }
             }
         }
