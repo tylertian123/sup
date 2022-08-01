@@ -25,6 +25,31 @@
 bool init_success = false;
 unsigned long ota_check_time = 0;
 
+const char* rst_reason_str(uint32_t reason) {
+    switch (reason) {
+    case REASON_DEFAULT_RST:
+        return PSTR("Power on");
+    case REASON_WDT_RST:
+        return PSTR("Hardware watchdog");
+    case REASON_EXCEPTION_RST:
+        return PSTR("Exception");
+    case REASON_SOFT_WDT_RST:
+        return PSTR("Software watchdog");
+    case REASON_SOFT_RESTART:
+        return PSTR("Soft restart");
+    case REASON_DEEP_SLEEP_AWAKE:
+        return PSTR("Deep sleep awake");
+    case REASON_EXT_SYS_RST:
+        return PSTR("External reset");
+    default:
+        return PSTR("Unknown");
+    }
+}
+
+bool rst_reason_is_error(uint32_t reason) {
+    return reason == REASON_WDT_RST || reason == REASON_SOFT_WDT_RST || reason == REASON_EXCEPTION_RST;
+}
+
 os_timer_t timer;
 
 void timer_cb(void *arg) {
@@ -37,6 +62,10 @@ void setup() {
     DEBUG_OUT(F("INFO: Firmware version: "));
     DEBUG_OUT_LN(FIRMWARE_VER);
 
+    rst_info *info = system_get_rst_info();
+    DEBUG_OUT(F("Cause of reset: "));
+    DEBUG_OUT_LN(FPSTR(rst_reason_str(info->reason)));
+
     config::init();
     if (!config::load_config()) {
         DEBUG_OUT_LN(F("Failed to load config object, using default values"));
@@ -45,6 +74,10 @@ void setup() {
     ui::init();
     ui::error_led.set(false);
     ui::status_led.set(false);
+
+    if (rst_reason_is_error(info->reason)) {
+        ui::error_led.set(true);
+    }
 
     os_timer_setfn(&timer, timer_cb, nullptr);
     os_timer_arm(&timer, 10, true);

@@ -120,7 +120,6 @@ namespace ui {
 
     void init() {
         // Sanity check
-        DEBUG_OUT_LN(config::global_config.disp_brightness);
         if (config::global_config.disp_brightness > 15) {
             config::global_config.disp_brightness = 0;
         }
