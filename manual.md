@@ -3,15 +3,16 @@
 - [Initial Setup](#initial-setup)
   - [1. Connecting Your Device](#1-connecting-your-device)
     - [Accessing the Configuration Page](#accessing-the-configuration-page)
-    - [Setting up the Database Connection](#setting-up-the-database-connection)
+    - [Setting Up the Database Connection](#setting-up-the-database-connection)
     - [Connect to WiFi](#connect-to-wifi)
     - [Troubleshooting](#troubleshooting)
   - [2. Configuring the Web App](#2-configuring-the-web-app)
-- [Web App Usage](#web-app-usage)
+- [Using the Web App](#using-the-web-app)
   - [Advanced Options](#advanced-options)
-- [Device Operation](#device-operation)
-- [Configuration Mode](#configuration-mode)
-- [Firmware Updates](#firmware-updates)
+- [Using the Device](#using-the-device)
+- [Advanced Device Usage](#advanced-device-usage)
+  - [Configuration Mode](#configuration-mode)
+  - [Firmware Updates](#firmware-updates)
 
 ## Initial Setup
 
@@ -28,7 +29,7 @@ Then, go to <http://sup.local> or <http://192.168.0.1> (note the `http` and **no
 
 ![Configuration interface](imgs/config1.png)
 
-#### Setting up the Database Connection
+#### Setting Up the Database Connection
 
 First, we will set up the database connection. Click on the Database Connection link:
 
@@ -59,7 +60,7 @@ Double check that you have the correct network name and password, and that the s
 NOTE: Due to hardware limitations, *the device only works on 2.4GHz WiFi networks*. Double check that the network you're trying to connect to is not 5GHz if you're having issues.
 
 If the device connects to WiFi successfully, but shows "DB/Error", then it has failed to connect to the database. This is usually caused by incorrect login credentials.
-In this case, you need to *put the device into configuration mode manually*, then follow the instructions above to set up the database connection again.
+In this case, you need to [put the device into configuration mode manually](#configuration-mode), then follow the instructions above to set up the database connection again.
 
 ### 2. Configuring the Web App
 
@@ -71,7 +72,7 @@ In the config page, enter the display data location that your friend entered in 
 
 Once the display is updated, you can head back to Home on the navbar, and start using the app!
 
-## Web App Usage
+## Using the Web App
 
 ![Main app interface](imgs/app1.png)
 
@@ -96,18 +97,61 @@ For example, let's say you'd like to update your friend's display to something n
 
 If the selector is set to Private (default), the saved drawing can only be accessed by yourself. If the selector is set to Public, then anyone who has the location of the drawing can load or modify it. You can use this to share a drawing with your friend.
 
-## Device Operation
+## Using the Device
 
 The device has 2 buttons: :heavy_plus_sign: and :heavy_minus_sign:. Here's what you can do with them:
 
-| Action                                 | Result                                          | Notes                                                                                                                                                                         |
-| -------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Press :heavy_plus_sign:                | Display brightness +1                           | Display brightness has 16 levels and is saved even after power is unplugged. Trying to increase the brightness when it's already at level 16 has no effect.                   |
-| Press :heavy_minus_sign:               | Display brightness -1                           | See above. Doing this at brightness level 0 has no effect.                                                                                                                    |
-| Hold :heavy_minus_sign: (1s)           | Enter sleep mode                                | The display turns off in sleep mode. Press any button to exit sleep mode. On display data update, the device will also exit sleep mode automatically.                         |
-| Hold :heavy_plus_sign: (2s)            | Device reboot                                   | The device will reboot *after you release the button*.                                                                                                                        |
-| Hold :heavy_minus_sign: during startup | Enter [configuration mode](#configuration-mode) | Hold the button as you plug in the device (or as you're performing a device reboot using the method above), and release it when the display says "Config Mode/Use Web Config" |
+| Action                                 | Result                                          | Notes                                                                                                                                                                          |
+| -------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Press :heavy_plus_sign:                | Display brightness +1                           | Display brightness has 16 levels and is saved even after power is unplugged. Trying to increase the brightness when it's already at level 16 has no effect.                    |
+| Press :heavy_minus_sign:               | Display brightness -1                           | See above. Doing this at brightness level 0 has no effect.                                                                                                                     |
+| Hold :heavy_minus_sign: (1s)           | Enter sleep mode                                | The display turns off in sleep mode. Press any button to exit sleep mode. On display data update, the device will also exit sleep mode automatically.                          |
+| Hold :heavy_plus_sign: (2s)            | Device reboot                                   | The device will reboot *after you release the button*.                                                                                                                         |
+| Hold :heavy_minus_sign: during startup | Enter [configuration mode](#configuration-mode) | Hold the button as you plug in the device (or as you're performing a device reboot using the method above), and release it when the display says "Config Mode/Use Web Config". |
 
-## Configuration Mode
+## Advanced Device Usage
 
-## Firmware Updates
+This is the stuff you don't need to worry about normally, but is still good to know.
+
+### Configuration Mode
+
+Configuration mode is used to set up the device and connect it to WiFi and the database. Since it has no physical input devices, configuration must be done through a web interface.
+
+If the device fails to connect to WiFi (e.g. first time setup, changed password or network, etc), it will enter configuration mode automatically. You can also force it to enter configuration mode by holding down :heavy_minus_sign: during startup.
+(The check is performed after the version is displayed, so make sure you're holding down the button during the entire boot sequence.)
+
+When in configuration mode, the display will show either "WiFi Error/Use Web Config" (if it failed to connect to WiFi) or "Config Mode/Use Web Config" (if put in configuration mode manually).
+The device will function as a WiFi access point and host its own network. Instructions on how to access the configuration page can be found in the [Initial Setup](#accessing-the-configuration-page).
+
+![Configuration interface](imgs/config1.png)
+
+Most of the configuration settings are pretty self-explanatory:
+
+- **Database Connection**: Give the device an email/password to connect to the database, and tell it where to fetch the display data. See [Setting Up the Database Connection](#setting-up-the-database-connection).
+- **Wi-Fi Settings**: Connect the device to WiFi. Supports both common home WiFi (network name + password) and enterprise WiFi (network name + username + password). See [Connect to Wifi](#connect-to-wifi).
+  - Hopefully you shouldn't need to worry about the country configuration. If you're having trouble connecting, try changing the country code to the one for the country you're currently in.
+- **Hosted Access Point Settings**: Change the WiFi name/password of the network hosted by the device for configuration mode. (Insert password security speech here) But seriously, you should change this to something secure, since this is the only thing stopping other people from messing with these settings!
+- **Upload New Firmware**: Perform a manual firmware update. See [Manual Updates](#manual-updates).
+
+### Firmware Updates
+
+The device is capable of receiving over-the-air (OTA) firmware updates. There are 2 ways to update: automatically through the internet, or manually through the configuration interface.
+
+*For both types of updates, it is very important that the update is not interrupted, or you could end up with corrupt firmware!* When the display shows "Please wait", **do not, under any circumstances, unpower the device**.
+
+#### Automatic Updates
+
+If your device is connected to WiFi and the database, it should be capable of automatically receiving updates. It will check for updates on startup and every 10 minutes.
+
+If there is an update, it will download the update while displaying the download progress percentage and a progress bar. This could take a few minutes.
+At this stage, if the update is interrupted (e.g. WiFi lost, power unplugged, etc), the update will fail but there is no risk of damage to the device.
+When the device is plugged back in again, it will reattempt the update sequence.
+
+Once the update finishes downloading, it will be installed while the display shows "Please wait". The device will be unresponsive to inputs. At this stage, **do not unplug the device**, or you could risk corrupting the firmware.
+When this is done, the device will reboot, and the update is complete!
+
+#### Manual Updates
+
+If the device cannot be connected to WiFi, manual updating can be used. Go to the configuration interface and select "Upload New Firmware". Then, select the new firmware blob that you were given, and press Upload and confirm.
+
+The rest of the update sequence is identical to an automatic update. The device will download the update with a progress bar (during which it is safe to interrupt the update), and then install the update while displaying "Please wait" (during which the update should not be interrupted). Then, the device will reboot and the update is complete.
