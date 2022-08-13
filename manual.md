@@ -8,7 +8,8 @@
     - [Troubleshooting](#troubleshooting)
   - [2. Configuring the Web App](#2-configuring-the-web-app)
 - [Web App Usage](#web-app-usage)
-- [Device Buttons](#device-buttons)
+  - [Advanced Options](#advanced-options)
+- [Device Operation](#device-operation)
 - [Configuration Mode](#configuration-mode)
 - [Firmware Updates](#firmware-updates)
 
@@ -62,9 +63,50 @@ In this case, you need to *put the device into configuration mode manually*, the
 
 ### 2. Configuring the Web App
 
+Open the web app in a browser (ask Tyler for the URL) and sign in with your credentials (the same ones you entered into the device config). Once signed in, you should see an alert telling you to configure some settings before you can use the app. Follow the link in the alert, or click on Config in the navbar.
+
+In the config page, enter the display data location that your friend entered in *their* device, then click Submit.
+
+(For example, if your friend set their device to read from `foo`, and you set your device to read from `bar` in the previous step, you should set the web app to write to `foo` and your friend should set the web app to write to `bar`. This way, the web app can be used to set the *other* person's display contents. For testing, you can make your web app update your own display by setting it to write to `bar` instead.)
+
+Once the display is updated, you can head back to Home on the navbar, and start using the app!
+
 ## Web App Usage
 
-## Device Buttons
+![Main app interface](imgs/app1.png)
+
+Draw on the display editor in the home page to set the contents of your friend's display. *Note that changes are only saved when you press Update.*
+
+Left or right clicking on any pixel toggles it. Holding down the left mouse button and dragging will turn on the pixels you drag over, while holding down the right mouse button erases them.
+
+The 4 buttons under the editor are, from left to right:
+
+- **Update**: Save the changes you made and update your friend's display contents. The physical display will be updated immediately. (This button is only clickable if you've made changes.)
+- **Clear**: Clear the contents of the *editor* (turn off all pixels). Note that this only clears the editor contents and not the actual display. Click Update to clear the real display as well.
+- **Reload**: Replace the current editor contents with the saved display contents. This will erase all your changes.
+- **Show/Hide Advanced Options**: Toggle the UI for [advanced options](#advanced-options).
+
+### Advanced Options
+
+![Advanced options](imgs/app2.png)
+
+Advanced options allow you to save or load the editor contents to/from another location in the database. You can use it to save drawings that you like, so they can be loaded back later.
+
+For example, let's say you'd like to update your friend's display to something new, but you still want to keep the current drawing to maybe use later. You can save the current drawing (e.g. enter `myDrawing` in the text box, then click Save), and then update your friend's display like usual. Later, you can load back your initial drawing (e.g. enter `myDrawing` in the text box, then click Load). Note you still need to click Update after loading.
+
+If the selector is set to Private (default), the saved drawing can only be accessed by yourself. If the selector is set to Public, then anyone who has the location of the drawing can load or modify it. You can use this to share a drawing with your friend.
+
+## Device Operation
+
+The device has 2 buttons: :heavy_plus_sign: and :heavy_minus_sign:. Here's what you can do with them:
+
+| Action                                 | Result                                          | Notes                                                                                                                                                                         |
+| -------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Press :heavy_plus_sign:                | Display brightness +1                           | Display brightness has 16 levels and is saved even after power is unplugged. Trying to increase the brightness when it's already at level 16 has no effect.                   |
+| Press :heavy_minus_sign:               | Display brightness -1                           | See above. Doing this at brightness level 0 has no effect.                                                                                                                    |
+| Hold :heavy_minus_sign: (1s)           | Enter sleep mode                                | The display turns off in sleep mode. Press any button to exit sleep mode. On display data update, the device will also exit sleep mode automatically.                         |
+| Hold :heavy_plus_sign: (2s)            | Device reboot                                   | The device will reboot *after you release the button*.                                                                                                                        |
+| Hold :heavy_minus_sign: during startup | Enter [configuration mode](#configuration-mode) | Hold the button as you plug in the device (or as you're performing a device reboot using the method above), and release it when the display says "Config Mode/Use Web Config" |
 
 ## Configuration Mode
 
